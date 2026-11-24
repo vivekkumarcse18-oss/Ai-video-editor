@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: ai-video-studio
+    env: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: PORT
+        value: 5050
+      - key: EXPORT_QUALITY
+        value: auto

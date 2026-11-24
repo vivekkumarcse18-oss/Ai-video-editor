@@ -1,0 +1,33 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Multi-User isolated temporary workspaces
+workspaces/
+scratch/
+.system_generated/
+
+# Video & Audio files (Keep directories, exclude large binary clips)
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.avi
+*.mp3
+*.wav
+*.m4a
+
+# Sensitive credentials
+client_secrets.json
+pexels_key.txt
+token.json
+
+# OS files
+Thumbs.db
+.DS_Store
