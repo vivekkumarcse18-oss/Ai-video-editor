@@ -841,7 +841,7 @@ def download_export(filename):
     return jsonify({"error": "File not found"}), 404
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5050))
+    port = int(os.environ.get("PORT", 7860))
     host = "0.0.0.0"
     print(f"🎬 Video Studio Backend Multi-User Cloud SaaS ready on http://{host}:{port}")
     app.run(host=host, port=port, debug=False, threaded=True)
