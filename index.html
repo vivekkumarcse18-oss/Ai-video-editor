@@ -1121,19 +1121,13 @@
     </div>
 
     <div class="header-actions">
-      <div class="session-pill" title="Isolated workspace session">
-        <span>SESSION:</span>
-        <strong id="headerSessionId">#...</strong>
-        <button class="btn-reset-session" onclick="resetStudioSession()" title="Start new clean workspace">(New)</button>
-      </div>
-
-      <div class="health-badge" id="engineHealthBadge" title="Engine Status: FFmpeg, Faster-Whisper, yt-dlp, Edge-TTS Ready">
-        <span class="live-dot"></span>
-        <span id="engineHealthText">Ready • Port 7860</span>
-      </div>
+      <!-- Hidden technical session & health diagnostics -->
+      <span id="headerSessionId" style="display:none;"></span>
+      <span id="engineHealthBadge" style="display:none;"><span id="engineHealthText"></span></span>
 
       <button class="btn btn-sm" onclick="syncAllWorkspaceData()" title="Refresh workspace data">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+        <span>Refresh</span>
       </button>
     </div>
   </header>
