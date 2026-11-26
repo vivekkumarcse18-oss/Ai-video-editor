@@ -840,6 +840,98 @@ def download_export(filename):
         return send_file(file_path, as_attachment=True, download_name=clean_name)
     return jsonify({"error": "File not found"}), 404
 
+# --- Video Feedback & AI Studio Chat ---
+FEEDBACK_LOG_PATH = os.path.join(BASE_DIR, "user_feedback.json")
+
+def generate_assistant_reply(user_msg, active_vid=""):
+    msg = user_msg.lower()
+    vid_hint = f" regarding '{active_vid}'" if active_vid else ""
+    if any(k in msg for k in ["caption", "sub", "subtitle", "word", "text", "timing"]):
+        return (f"✍️ Caption Feedback Noted{vid_hint}! Timings are generated via Faster-Whisper int8 model. "
+                f"Tip: If captions drift, make sure the voiceover has clear pronunciation and brief natural pauses.")
+    elif any(k in msg for k in ["sound", "audio", "voice", "bgm", "music", "loud", "noise", "volume"]):
+        return (f"🎙️ Audio Feedback Logged{vid_hint}! The studio automatically applies -25dB noise suppression, "
+                f"radio EQ, and 6:1 BGM auto-ducking (-14 LUFS). If BGM feels too prominent, you can upload a milder BGM.")
+    elif any(k in msg for k in ["quality", "blur", "4k", "1080p", "resolution", "pixel"]):
+        return (f"📺 Resolution Guide: You can select '4K Ultra HD (2160x3840 @ 35 Mbps)' in Step 4 before rendering. "
+                f"In 'Auto' mode, if your raw clip is 4K, 4K will be exported automatically!")
+    elif any(k in msg for k in ["slow", "time", "speed", "stuck", "render", "fast"]):
+        return (f"⚡ Render Engine Info: Rendering uses multi-threaded libx264 with CPU threading. "
+                f"1-minute shorts typically take 15-45 seconds depending on effects and caption length.")
+    elif any(k in msg for k in ["cut", "jump", "silence", "vlog"]):
+        return (f"✂️ Jump-Cut Feedback: Vlog Pro automatically slices silences below -30dB with alternating "
+                f"punch-zooms (1.08x) and DaVinci color grading.")
+    else:
+        return (f"✅ Thank you! Your feedback/issue report{vid_hint} has been successfully recorded. "
+                f"Our studio automation pipeline monitors these logs to continuously improve video renders.")
+
+@app.route("/api/chat/message", methods=["POST"])
+def post_chat_message():
+    session_id, ws_dir = get_session_info()
+    data = request.get_json(silent=True) or {}
+    user_text = (data.get("message") or "").strip()
+    active_vid = (data.get("video") or "").strip()
+    category = data.get("category", "feedback")
+
+    if not user_text:
+        return jsonify({"error": "Message is empty"}), 400
+
+    now_str = time.strftime("%Y-%m-%d %H:%M:%S")
+    bot_reply = generate_assistant_reply(user_text, active_vid)
+
+    new_entry = {
+        "id": f"msg_{int(time.time()*1000)}",
+        "session_id": session_id,
+        "video": active_vid,
+        "category": category,
+        "user_message": user_text,
+        "assistant_reply": bot_reply,
+        "timestamp": now_str
+    }
+
+    # Save to session feedback
+    sess_fb_path = os.path.join(ws_dir, "feedback.json")
+    sess_history = []
+    if os.path.exists(sess_fb_path):
+        try:
+            with open(sess_fb_path, "r", encoding="utf-8") as f:
+                sess_history = json.load(f)
+        except Exception:
+            sess_history = []
+    sess_history.append(new_entry)
+    with open(sess_fb_path, "w", encoding="utf-8") as f:
+        json.dump(sess_history, f, ensure_ascii=False, indent=2)
+
+    # Append to global feedback store
+    try:
+        global_history = []
+        if os.path.exists(FEEDBACK_LOG_PATH):
+            with open(FEEDBACK_LOG_PATH, "r", encoding="utf-8") as f:
+                global_history = json.load(f)
+        global_history.append(new_entry)
+        with open(FEEDBACK_LOG_PATH, "w", encoding="utf-8") as f:
+            json.dump(global_history, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Error logging global feedback: {e}")
+
+    return jsonify({
+        "status": "success",
+        "entry": new_entry,
+        "session_id": session_id
+    })
+
+@app.route("/api/chat/messages", methods=["GET"])
+def get_chat_messages():
+    session_id, ws_dir = get_session_info()
+    sess_fb_path = os.path.join(ws_dir, "feedback.json")
+    if os.path.exists(sess_fb_path):
+        try:
+            with open(sess_fb_path, "r", encoding="utf-8") as f:
+                return jsonify({"messages": json.load(f), "session_id": session_id})
+        except Exception:
+            pass
+    return jsonify({"messages": [], "session_id": session_id})
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 7860))
     host = "0.0.0.0"

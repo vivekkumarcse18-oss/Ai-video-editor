@@ -1,0 +1,11 @@
+[
+  {
+    "id": "msg_1795660468667",
+    "session_id": "test_chat_sess",
+    "video": "pro_self_video.mp4",
+    "category": "issue",
+    "user_message": "The caption timing is slightly off in the beginning",
+    "assistant_reply": "✍️ Caption Feedback Noted regarding 'pro_self_video.mp4'! Timings are generated via Faster-Whisper int8 model. Tip: If captions drift, make sure the voiceover has clear pronunciation and brief natural pauses.",
+    "timestamp": "2026-11-26 08:04:28"
+  }
+]
