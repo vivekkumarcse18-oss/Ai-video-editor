@@ -117,7 +117,10 @@ def run_autopilot():
     else:
         print("1. Generating Energetic Voice + Captions...")
         raw_ai = os.path.join(AUDIO_DIR, "raw_ai.mp3")
-        asyncio.run(generate_ai_voice(meta["script"], raw_ai, subs_out))
+        script_text = (meta.get("script") or "").strip()
+        if not script_text:
+            script_text = "Dosto, kya aapko pata hai duniya ke 3 sabse ajeeb secrets? Number ek, is video ko dhyan se dekho aur channel ko follow zaroor karo!"
+        asyncio.run(generate_ai_voice(script_text, raw_ai, subs_out))
         master_voice(raw_ai, audio_out)
 
     links_file = os.path.join(RAW_DIR, "links.txt")
@@ -136,13 +139,12 @@ def run_autopilot():
         print(f"2. Using {len(raws)} local clips from Raw video folder!")
     else:
         print("2. Fetching Free Moving HD Video Clips...")
-        download_moving_videos(meta["prompts"])
+        prompts = meta.get("prompts") or ["miami sunset city", "modern architecture neon", "street lights night"]
+        download_moving_videos(prompts)
 
     print("3. Rendering Pro Studio Master Edit...")
     build_video()
-    print("4. Uploading to YouTube Shorts...")
-    upload_video()
-    print("DONE! Video Uploaded & Saved in Export/final_video.mp4!")
+    print("DONE! Video Saved in Export/final_video.mp4!")
 
 if __name__ == "__main__":
     run_autopilot()

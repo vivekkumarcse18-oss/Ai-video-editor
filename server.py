@@ -241,6 +241,14 @@ class MultiSessionQueueManager:
 
                 status_msg = "✅ Completed successfully!" if rc == 0 else f"❌ Process terminated with exit code {rc}"
                 self.broadcast(session_id, {
+                    "type": "complete",
+                    "success": (rc == 0),
+                    "code": rc,
+                    "engine": engine_name,
+                    "message": status_msg,
+                    "timestamp": time.strftime("%H:%M:%S")
+                })
+                self.broadcast(session_id, {
                     "type": "end",
                     "engine": engine_name,
                     "code": rc,

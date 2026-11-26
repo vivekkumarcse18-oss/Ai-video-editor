@@ -1934,8 +1934,11 @@
               else if (l.includes("pacing") || l.includes("auto-editing")) actionText.innerText = "⚡ Slicing video clips to music rhythm...";
               else if (l.includes("ffmpeg") || l.includes("render") || l.includes("encoding")) actionText.innerText = "🎬 Rendering final 9:16 vertical video...";
             }
-          } else if (data.type === "complete") {
-            handleJobFinished(data.success, data.engine);
+          } else if (data.type === "complete" || data.type === "end") {
+            const isSuccess = data.type === "complete" ? Boolean(data.success) : (data.code === 0);
+            handleJobFinished(isSuccess, data.engine);
+          } else if (data.type === "error") {
+            handleJobFinished(false, data.engine);
           } else if (data.type === "status") {
             if (!data.is_running && IS_JOB_RUNNING) {
               handleJobFinished(true, data.current_engine);

@@ -58,24 +58,54 @@ def get_insta_audio(ref_vid):
         if url.startswith("http"):
             print("2. Extracting trending audio from audio/insta_link.txt...")
             if os.path.exists(insta_mp3):
-                os.remove(insta_mp3)
-            subprocess.run([
-                "yt-dlp", "-x", "--audio-format", "mp3",
-                "-o", os.path.join(AUDIO_DIR, "insta_bgm.%(ext)s"), url
-            ], check=True)
-            if os.path.exists(insta_mp3):
-                return insta_mp3
+                try: os.remove(insta_mp3)
+                except Exception: pass
+            try:
+                subprocess.run([
+                    "yt-dlp", "-x", "--audio-format", "mp3",
+                    "-o", os.path.join(AUDIO_DIR, "insta_bgm.%(ext)s"), url
+                ], check=True, timeout=60)
+            except Exception as e:
+                print(f"Warning: yt-dlp link download notice: {e}")
+
+            # Check if insta_bgm was downloaded with any audio format
+            for f in glob.glob(os.path.join(AUDIO_DIR, "insta_bgm.*")):
+                if not f.endswith(".txt"):
+                    return f
 
     if os.path.exists(custom_bgm):
         print("2. Using audio/bgm.mp3...")
         return custom_bgm
 
+    # Check any audio file in audio folder
+    for f in glob.glob(os.path.join(AUDIO_DIR, "*.*")):
+        if f.lower().endswith((".mp3", ".wav", ".m4a", ".aac")) and not f.endswith("insta_link.txt"):
+            print(f"2. Using existing audio track: {f}")
+            return f
+
     if ref_vid and os.path.exists(ref_vid):
         print("2. Extracting audio directly from Reference Reel...")
-        VideoFileClip(ref_vid).audio.write_audiofile(insta_mp3, logger=None)
-        return insta_mp3
+        try:
+            VideoFileClip(ref_vid).audio.write_audiofile(insta_mp3, logger=None)
+            if os.path.exists(insta_mp3):
+                return insta_mp3
+        except Exception as e:
+            print(f"Warning: could not extract ref audio: {e}")
 
-    raise FileNotFoundError("References/style_link.txt ya audio/insta_link.txt mein link daalo!")
+    # Safe rhythmic fallback audio
+    fallback_mp3 = os.path.join(AUDIO_DIR, "rhythm_beat.mp3")
+    print("2. Generating rhythm synth background audio...")
+    try:
+        subprocess.run([
+            "ffmpeg", "-y", "-f", "lavfi", "-i", "sine=frequency=120:duration=30",
+            "-c:a", "libmp3lame", "-b:a", "128k", fallback_mp3
+        ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if os.path.exists(fallback_mp3):
+            return fallback_mp3
+    except Exception:
+        pass
+
+    raise FileNotFoundError("Audio track missing. Kripya apna audio (.mp3) upload karein ya Instagram link dalein.")
 
 def build_insta_reel():
     target_w, target_h, bitrate, quality_label = get_export_resolution_and_bitrate(RAW_DIR)
@@ -89,10 +119,18 @@ def build_insta_reel():
 
     raws = sorted([
         f for f in glob.glob(os.path.join(RAW_DIR, "*.*"))
-        if f.lower().endswith((".mp4", ".mov", ".mkv"))
+        if f.lower().endswith((".mp4", ".mov", ".mkv", ".webm"))
     ])
     if not raws:
-        raise FileNotFoundError("Raw video folder mein apni clips daalo!")
+        alt_raw = os.path.join(BASE_DIR, "videos")
+        if os.path.exists(alt_raw):
+            raws = sorted([
+                f for f in glob.glob(os.path.join(alt_raw, "*.*"))
+                if f.lower().endswith((".mp4", ".mov", ".mkv", ".webm"))
+            ])
+
+    if not raws:
+        raise FileNotFoundError("Raw video clips missing. Kripya pehle apni video clip (.mp4) upload karein!")
 
     print(f"3. Auto-editing {len(raws)} clips matching reference pacing ({cut_speed}s cuts) at {target_w}x{target_h}...")
     v_clips = []

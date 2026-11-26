@@ -6,11 +6,11 @@ if not hasattr(PIL.Image, "ANTIALIAS"):
     PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
 from PIL import Image, ImageDraw, ImageFont
 try:
-    from moviepy.editor import VideoFileClip, AudioFileClip, ImageClip, CompositeVideoClip, CompositeAudioClip, concatenate_videoclips
+    from moviepy.editor import VideoFileClip, AudioFileClip, ImageClip, CompositeVideoClip, CompositeAudioClip, concatenate_videoclips, concatenate_audioclips
     from moviepy.audio.AudioClip import AudioArrayClip
 except (ImportError, ModuleNotFoundError):
     try:
-        from moviepy import VideoFileClip, AudioFileClip, ImageClip, CompositeVideoClip, CompositeAudioClip, concatenate_videoclips
+        from moviepy import VideoFileClip, AudioFileClip, ImageClip, CompositeVideoClip, CompositeAudioClip, concatenate_videoclips, concatenate_audioclips
         from moviepy.audio.AudioClip import AudioArrayClip
     except Exception:
         from moviepy.video.io.VideoFileClip import VideoFileClip
@@ -19,6 +19,10 @@ except (ImportError, ModuleNotFoundError):
         from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
         from moviepy.audio.AudioClip import CompositeAudioClip, AudioArrayClip
         from moviepy.video.compositing.concatenate import concatenate_videoclips
+        try:
+            from moviepy.audio.AudioClip import concatenate_audioclips
+        except Exception:
+            pass
 
 import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -279,7 +283,11 @@ def build_video():
     if os.path.exists(bgm_path):
         bgm = AudioFileClip(bgm_path).volumex(0.12)
         if bgm.duration < total_dur:
-            bgm = concatenate_videoclips([bgm] * (int(total_dur // bgm.duration) + 1))
+            loops = int(total_dur // bgm.duration) + 1
+            try:
+                bgm = concatenate_audioclips([bgm] * loops)
+            except Exception:
+                pass
         audio_tracks.append(bgm.subclip(0, total_dur))
     else:
         audio_tracks.append(make_tension_bed(total_dur))
