@@ -840,6 +840,134 @@ def download_export(filename):
         return send_file(file_path, as_attachment=True, download_name=clean_name)
     return jsonify({"error": "File not found"}), 404
 
+# --- NLE Timeline & Reference Video Streaming Endpoints ---
+@app.route("/api/reference/video", methods=["GET"])
+def stream_reference_video():
+    session_id, ws_dir = get_session_info()
+    paths = get_workspace_paths(ws_dir)
+    ref_vid = os.path.join(paths["ref"], "ref_sample.mp4")
+    if not os.path.exists(ref_vid):
+        alt_vid = os.path.join(paths["alt_ref"], "ref_sample.mp4")
+        if os.path.exists(alt_vid):
+            ref_vid = alt_vid
+    if os.path.exists(ref_vid):
+        return send_file_partial(ref_vid)
+    return jsonify({"error": "No reference video uploaded"}), 404
+
+@app.route("/api/timeline", methods=["GET"])
+def get_timeline():
+    session_id, ws_dir = get_session_info()
+    paths = get_workspace_paths(ws_dir)
+    
+    # Check clips in Raw video / videos
+    video_clips = []
+    raw_files = [f for f in os.listdir(paths["raw"]) if f.lower().endswith((".mp4", ".mov", ".mkv", ".webm"))] if os.path.exists(paths["raw"]) else []
+    if not raw_files and os.path.exists(paths["videos"]):
+        raw_files = [f for f in os.listdir(paths["videos"]) if f.lower().endswith((".mp4", ".mov", ".mkv", ".webm"))]
+    
+    start_cur = 0.0
+    for idx, f in enumerate(raw_files):
+        dur = 3.5
+        video_clips.append({
+            "name": f,
+            "start": round(start_cur, 2),
+            "end": round(start_cur + dur, 2),
+            "duration": dur,
+            "type": "video"
+        })
+        start_cur += dur
+
+    # Check Voice audio
+    voice_track = []
+    audio_files = os.listdir(paths["audio"]) if os.path.exists(paths["audio"]) else []
+    my_voice = next((f for f in audio_files if f.startswith("my_voice.") or f == "voiceover.mp3" or f == "raw_ai.mp3"), None)
+    total_timeline_dur = max(start_cur, 20.0)
+    if my_voice:
+        voice_track.append({
+            "name": my_voice,
+            "start": 0.0,
+            "end": total_timeline_dur,
+            "duration": total_timeline_dur,
+            "type": "voice"
+        })
+
+    # Check BGM
+    bgm_track = []
+    bgm_file = next((f for f in audio_files if f.startswith("bgm.") or f.startswith("insta_bgm.")), None)
+    if bgm_file:
+        bgm_track.append({
+            "name": bgm_file,
+            "start": 0.0,
+            "end": total_timeline_dur,
+            "duration": total_timeline_dur,
+            "type": "bgm"
+        })
+    else:
+        bgm_track.append({
+            "name": "Auto Tension Bed",
+            "start": 0.0,
+            "end": total_timeline_dur,
+            "duration": total_timeline_dur,
+            "type": "bgm"
+        })
+
+    # Check Captions (from subs.json)
+    captions_track = []
+    subs_path = os.path.join(paths["audio"], "subs.json")
+    if os.path.exists(subs_path):
+        try:
+            with open(subs_path, "r", encoding="utf-8") as f:
+                subs = json.load(f)
+                for s in subs:
+                    captions_track.append({
+                        "text": s.get("text", ""),
+                        "start": round(s.get("start", 0), 2),
+                        "end": round(s.get("end", 0), 2),
+                        "type": "caption"
+                    })
+        except Exception:
+            pass
+
+    # Hook banner
+    meta_path = paths["meta"]
+    title_text = "HOOK BANNER"
+    if os.path.exists(meta_path):
+        try:
+            with open(meta_path, "r", encoding="utf-8") as f:
+                meta = json.load(f)
+                title_text = meta.get("title", "HOOK BANNER")
+        except Exception:
+            pass
+
+    return jsonify({
+        "status": "success",
+        "session_id": session_id,
+        "total_duration": total_timeline_dur,
+        "tracks": {
+            "v2_captions": {
+                "label": "V2: Captions & Hook",
+                "color": "#f59e0b",
+                "hook": { "text": title_text, "start": 0.0, "end": min(total_timeline_dur, 4.0) },
+                "items": captions_track
+            },
+            "v1_video": {
+                "label": "V1: Video Clips",
+                "color": "#38bdf8",
+                "items": video_clips
+            },
+            "a1_voice": {
+                "label": "A1: Master Voice",
+                "color": "#10b981",
+                "items": voice_track
+            },
+            "a2_bgm": {
+                "label": "A2: Ducked BGM + SFX",
+                "color": "#a855f7",
+                "items": bgm_track
+            }
+        }
+    })
+
 # --- Video Feedback & AI Studio Chat ---
 FEEDBACK_LOG_PATH = os.path.join(BASE_DIR, "user_feedback.json")
 

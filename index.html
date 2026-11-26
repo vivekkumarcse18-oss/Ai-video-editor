@@ -2,2239 +2,2370 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Video Studio | Multi-User Workspace</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Adobe Premiere Pro / DaVinci Resolve NLE Studio</title>
   <style>
     :root {
-      --bg-body: #0a0d14;
-      --bg-surface: #101520;
-      --bg-card: #151b28;
-      --bg-card-hover: #1b2334;
-      --bg-input: #0c1018;
-      --border: #232d3f;
-      --border-focus: #38bdf8;
-      --text: #f1f5f9;
-      --text-sub: #94a3b8;
-      --text-dim: #64748b;
+      /* Adobe Premiere Pro & DaVinci Resolve Dark Charcoal Theme */
+      --nle-bg: #141416;
+      --nle-surface: #1b1b1f;
+      --nle-card: #202025;
+      --nle-card-hover: #27272e;
+      --nle-header: #232328;
+      --nle-border: #2d2d34;
+      --nle-border-highlight: #3e3e48;
+      --nle-text: #e6e6ec;
+      --nle-text-sub: #9e9ea8;
+      --nle-text-dim: #676772;
 
-      --cyan: #38bdf8;
-      --purple: #a855f7;
-      --pink: #ec4899;
-      --green: #10b981;
-      --amber: #f59e0b;
-      --red: #ef4444;
+      /* NLE Track & Accent Colors */
+      --premiere-blue: #2d8ceb;
+      --premiere-blue-hover: #489bf2;
+      --record-red: #ff4b4b;
+      --audio-green: #10b981;
+      --sub-amber: #f59e0b;
+      --bgm-purple: #a855f7;
+      --davinci-gold: #eab308;
 
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --font-mono: "JetBrains Mono", Consolas, "Fira Code", monospace;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: "JetBrains Mono", Consolas, "SF Mono", monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      background: var(--bg-body);
-      color: var(--text);
-      font-family: var(--font-sans);
-      font-size: 13.5px;
-      line-height: 1.5;
-      padding-bottom: 90px;
-      overflow-x: hidden;
+    html, body {
+      width: 100%;
+      height: 100vh;
+      background: var(--nle-bg);
+      color: var(--nle-text);
+      font-family: var(--font-ui);
+      font-size: 12.5px;
+      line-height: 1.4;
+      overflow: hidden;
+      user-select: none;
     }
 
-    /* Top Navigation Header */
-    header {
-      background: rgba(16, 21, 32, 0.95);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      padding: 12px 28px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-    }
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--nle-bg); }
+    ::-webkit-scrollbar-thumb { background: var(--nle-border-highlight); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--nle-text-dim); }
 
-    .brand-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .brand-logo {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, var(--cyan), var(--purple));
-      border-radius: var(--radius-sm);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
-    }
-    .brand-logo svg { width: 20px; height: 20px; fill: #fff; }
-    .brand-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .brand-subtitle {
-      font-size: 11px;
-      color: var(--text-sub);
-    }
-
-    .header-tools {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .session-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(56, 189, 248, 0.08);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      color: var(--cyan);
-      font-family: var(--font-mono);
-    }
-    .btn-new-session {
-      background: none;
-      border: none;
-      color: var(--text-dim);
-      cursor: pointer;
-      font-size: 10px;
-      text-decoration: underline;
-      padding: 0 4px;
-    }
-    .btn-new-session:hover { color: #fff; }
-
-    .status-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: #0b0e14;
-      border: 1px solid var(--border);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      color: var(--text-sub);
-      font-family: var(--font-mono);
-    }
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-    }
-    .dot.busy {
-      background: var(--amber);
-      box-shadow: 0 0 8px var(--amber);
-      animation: pulse 1s infinite alternate;
-    }
-    @keyframes pulse { from { opacity: 0.3; } to { opacity: 1; } }
-
-    /* Buttons */
+    /* Button System */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      padding: 8px 14px;
+      gap: 5px;
+      padding: 5px 10px;
       border-radius: var(--radius-sm);
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 600;
       cursor: pointer;
-      border: none;
+      border: 1px solid var(--nle-border);
+      background: var(--nle-card);
+      color: var(--nle-text);
       transition: all 0.15s ease;
+      white-space: nowrap;
       text-decoration: none;
     }
-    .btn-default {
-      background: var(--bg-card);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-    .btn-default:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--text-dim);
-    }
-    .btn-cyan {
-      background: var(--cyan);
-      color: #0b0e14;
-    }
-    .btn-cyan:hover { background: #7dd3fc; }
-    .btn-purple {
-      background: var(--purple);
-      color: #fff;
-    }
-    .btn-purple:hover { background: #c084fc; }
-    .btn-pink {
-      background: var(--pink);
-      color: #fff;
-    }
-    .btn-pink:hover { background: #f472b6; }
-    .btn-green {
-      background: var(--green);
-      color: #0b0e14;
-    }
+    .btn:hover { background: var(--nle-card-hover); border-color: var(--nle-border-highlight); color: #fff; }
+    .btn-primary { background: var(--premiere-blue); border-color: var(--premiere-blue); color: #fff; }
+    .btn-primary:hover { background: var(--premiere-blue-hover); border-color: var(--premiere-blue-hover); }
+    .btn-danger { background: rgba(255, 75, 75, 0.15); border-color: rgba(255, 75, 75, 0.35); color: var(--record-red); }
+    .btn-danger:hover { background: rgba(255, 75, 75, 0.3); }
+    .btn-green { background: var(--audio-green); border-color: var(--audio-green); color: #0b0e14; }
     .btn-green:hover { background: #34d399; }
-    .btn-danger {
-      background: rgba(239, 68, 68, 0.15);
-      color: var(--red);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-    }
-    .btn-danger:hover {
-      background: rgba(239, 68, 68, 0.25);
-    }
+    .btn-sm { padding: 3px 7px; font-size: 10.5px; }
 
-    /* Main Container */
-    .app-wrap {
-      max-width: 1240px;
-      margin: 24px auto;
-      padding: 0 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 28px;
-    }
-
-    /* Section Headers */
-    .section-title-wrap {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-    .section-heading {
-      font-size: 14px;
-      font-weight: 700;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .section-sub {
-      font-size: 11.5px;
-      color: var(--text-sub);
-    }
-
-    /* 3 Clean Folders Showcase */
-    .folders-trio {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    .folder-tile {
-      background: var(--bg-card);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 18px 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    .folder-tile:hover {
-      background: var(--bg-card-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    }
-    .folder-tile.active {
-      border-color: var(--tile-accent, var(--cyan));
-      background: #141c2c;
-      box-shadow: 0 0 0 1px var(--tile-accent, var(--cyan)), 0 8px 24px rgba(0,0,0,0.4);
-    }
-    .folder-tile.ft-raw { --tile-accent: var(--cyan); }
-    .folder-tile.ft-ref { --tile-accent: var(--pink); }
-    .folder-tile.ft-audio { --tile-accent: var(--purple); }
-
-    .folder-tile-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .folder-tile-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: var(--radius-sm);
-      background: rgba(255, 255, 255, 0.04);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--tile-accent, var(--cyan));
-      transition: transform 0.2s;
-    }
-    .folder-tile:hover .folder-tile-icon {
-      transform: scale(1.08);
-    }
-    .folder-tile-icon svg { width: 22px; height: 22px; }
-
-    .folder-tile-name {
-      font-size: 15px;
-      font-weight: 700;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .folder-tile-desc {
-      font-size: 11.5px;
-      color: var(--text-sub);
-      margin-top: 2px;
-    }
-
-    .folder-tile-badge {
-      font-size: 11px;
-      font-weight: 700;
-      font-family: var(--font-mono);
-      padding: 4px 10px;
-      border-radius: 12px;
-      background: #0b0e14;
-      border: 1px solid var(--border);
-      color: var(--text-sub);
-    }
-    .folder-tile.active .folder-tile-badge {
-      border-color: var(--tile-accent, var(--cyan));
-      color: var(--tile-accent, var(--cyan));
-    }
-
-    .folder-open-hint {
-      position: absolute;
-      bottom: 4px;
-      right: 14px;
-      font-size: 9.5px;
-      color: var(--tile-accent, var(--cyan));
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    .folder-tile.active .folder-open-hint {
-      opacity: 1;
-    }
-
-    /* Active Folder Workspace Drawer */
-    .folder-workspace-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 22px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-      position: relative;
-    }
-    .folder-workspace-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 16px;
-      margin-bottom: 18px;
-      border-bottom: 1px solid var(--border);
-    }
-    .folder-workspace-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .folder-workspace-body {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    /* Clean Dropzone */
-    .clean-dropzone {
-      border: 2px dashed var(--border);
-      border-radius: var(--radius-md);
-      padding: 22px 16px;
-      text-align: center;
-      background: rgba(11, 14, 20, 0.5);
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-    }
-    .clean-dropzone:hover, .clean-dropzone.dragover {
-      border-color: var(--cyan);
-      background: rgba(56, 189, 248, 0.04);
-      transform: translateY(-1px);
-    }
-    .clean-dropzone svg { width: 26px; height: 26px; color: var(--text-sub); }
-    .clean-dropzone:hover svg { color: var(--cyan); }
-    .clean-dropzone-title { font-weight: 600; font-size: 13.5px; color: #fff; }
-    .clean-dropzone-sub { font-size: 11px; color: var(--text-dim); }
-
-    /* Input Card */
-    .clean-input-box {
-      background: #0b0e14;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .clean-input-title {
-      font-size: 11.5px;
-      font-weight: 600;
-      color: var(--text-sub);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    /* Inputs */
     input[type="text"], textarea, select {
       width: 100%;
-      background: #181d27;
-      border: 1px solid var(--border);
+      background: #101013;
+      border: 1px solid var(--nle-border);
       border-radius: var(--radius-sm);
-      color: var(--text);
-      padding: 9px 12px;
-      font-size: 12.5px;
+      color: #fff;
+      padding: 6px 9px;
+      font-size: 11.5px;
       font-family: inherit;
       outline: none;
       transition: border-color 0.15s;
     }
     input[type="text"]:focus, textarea:focus, select:focus {
-      border-color: var(--border-focus);
+      border-color: var(--premiere-blue);
+      box-shadow: 0 0 0 1px var(--premiere-blue);
     }
-    textarea { resize: vertical; min-height: 64px; }
+    textarea { resize: vertical; min-height: 52px; }
 
-    /* File Table */
-    .file-table-box {
-      background: #0b0e14;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
+    /* Master NLE App Container */
+    .nle-app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ================= 1. TOP MENU & WORKSPACE BAR ================= */
+    .nle-top-bar {
+      height: 42px;
+      background: var(--nle-header);
+      border-bottom: 1px solid var(--nle-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      flex-shrink: 0;
+      gap: 12px;
+    }
+
+    .nle-top-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .nle-logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+    .pr-pill {
+      background: #141418;
+      border: 1px solid #7c3aed;
+      color: #c084fc;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+
+    /* Workspace Switcher Tabs */
+    .nle-workspaces-row {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: #131316;
+      padding: 2px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--nle-border);
+    }
+    .workspace-tab-btn {
+      background: none;
+      border: none;
+      color: var(--nle-text-sub);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .workspace-tab-btn:hover { color: #fff; }
+    .workspace-tab-btn.active {
+      background: var(--nle-card);
+      color: var(--premiere-blue);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .nle-top-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .session-badge {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      background: #131316;
+      border: 1px solid var(--nle-border);
+      color: var(--nle-text-sub);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .session-badge .btn-reset {
+      background: none;
+      border: none;
+      color: var(--premiere-blue);
+      font-size: 9.5px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .health-pill {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--audio-green);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--audio-green);
+    }
+    .live-dot.busy {
+      background: var(--record-red);
+      animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse { from { opacity: 0.3; } to { opacity: 1; } }
+
+    /* ================= MAIN 4-PANE DOCKED VIEWPORT ================= */
+    .nle-body-grid {
+      flex: 1;
+      display: grid;
+      grid-template-rows: 1fr 240px;
+      overflow: hidden;
+      background: #0f0f11;
+    }
+
+    .nle-top-panes {
+      display: grid;
+      grid-template-columns: 340px 1fr 380px;
+      overflow: hidden;
+      border-bottom: 2px solid #000;
+    }
+
+    /* Common Docked Pane Container */
+    .docked-pane {
+      background: var(--nle-surface);
+      border-right: 1px solid var(--nle-border);
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
     }
-    .file-table-header {
-      padding: 8px 14px;
-      background: rgba(255, 255, 255, 0.02);
-      border-bottom: 1px solid var(--border);
+    .docked-pane:last-child { border-right: none; }
+
+    .pane-header-bar {
+      height: 32px;
+      background: var(--nle-header);
+      border-bottom: 1px solid var(--nle-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      flex-shrink: 0;
+    }
+    .pane-title-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       font-size: 11px;
       font-weight: 700;
-      color: var(--text-dim);
-      display: flex;
-      justify-content: space-between;
+      color: #fff;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    .file-rows-list {
-      max-height: 180px;
-      overflow-y: auto;
-    }
-    .file-item-row {
+    .pane-tabs-row {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      font-size: 12.5px;
+      gap: 2px;
     }
-    .file-item-row:last-child { border-bottom: none; }
-    .file-item-row:hover { background: rgba(255, 255, 255, 0.02); }
-    .file-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 75%;
-    }
-    .file-left svg { width: 15px; height: 15px; color: var(--cyan); flex-shrink: 0; }
-    .file-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-shrink: 0;
-    }
-    .file-size-tag {
-      font-size: 11px;
-      color: var(--text-dim);
-      font-family: var(--font-mono);
-    }
-    .btn-del {
+    .pane-tab-item {
+      padding: 4px 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--nle-text-sub);
+      cursor: pointer;
+      border-radius: 3px;
+      border: 1px solid transparent;
       background: none;
-      border: none;
-      color: var(--text-dim);
-      cursor: pointer;
       display: flex;
       align-items: center;
-      padding: 3px;
-      border-radius: 4px;
-      transition: color 0.15s;
+      gap: 4px;
     }
-    .btn-del:hover { color: var(--red); }
-    .empty-state {
-      padding: 20px;
-      text-align: center;
-      color: var(--text-dim);
-      font-size: 12px;
+    .pane-tab-item:hover { color: #fff; }
+    .pane-tab-item.active {
+      background: var(--nle-card);
+      color: var(--premiere-blue);
+      border-color: var(--nle-border);
     }
 
-    /* Pro Audio & Video Badges */
-    .pro-pipeline-pill {
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-      border-radius: var(--radius-sm);
-      padding: 8px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-    }
-    .pro-pipeline-pill:hover { background: rgba(16, 185, 129, 0.12); }
-    .pro-tags-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .pro-tag-item {
-      background: #0b0e14;
-      border: 1px solid var(--border);
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-    }
-    .pro-tag-name { font-size: 11.5px; font-weight: 700; color: #fff; }
-    .pro-tag-sub { font-size: 10px; color: var(--text-sub); }
-
-    /* ================= STEP 4: EXPORT & CREATE ================= */
-    .export-studio-card {
-      background: var(--bg-card);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    /* ================= PANE 1: PROJECT MEDIA BIN ================= */
+    .media-bin-body {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 20px;
-    }
-
-    .export-controls-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      background: #0b0e14;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 12px 18px;
-    }
-    .quality-select-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    /* 3 Action Hero Cards */
-    .hero-actions-trio {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-    .hero-btn-card {
-      background: #0b0e14;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .hero-btn-card:hover {
-      border-color: var(--btn-color, var(--cyan));
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
-    .hero-btn-card h3 {
-      font-size: 14px;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .hero-btn-card p {
-      font-size: 11.5px;
-      color: var(--text-sub);
-      margin-top: 6px;
-    }
-
-    /* Queue Status Banner */
-    .queue-status-banner {
-      background: rgba(56, 189, 248, 0.06);
-      border: 1px solid rgba(56, 189, 248, 0.2);
-      border-radius: var(--radius-sm);
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 12px;
-    }
-    .queue-status-banner.running {
-      background: rgba(245, 158, 11, 0.08);
-      border-color: rgba(245, 158, 11, 0.3);
-      color: var(--amber);
-    }
-
-    /* Video Player & Publish Panel */
-    .preview-publish-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 1.2fr;
-      gap: 20px;
-      align-items: start;
-    }
-    .video-frame {
-      background: #000;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
       overflow: hidden;
-      aspect-ratio: 9 / 16;
-      max-height: 480px;
-      margin: 0 auto;
+      padding: 8px;
+      gap: 8px;
+    }
+
+    /* URL Ingestion Strip */
+    .url-ingest-strip {
+      background: #111114;
+      border: 1px solid var(--nle-border);
+      border-radius: var(--radius-sm);
+      padding: 6px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ingest-tabs {
+      display: flex;
+      gap: 4px;
+    }
+    .ingest-tab-btn {
+      padding: 2px 6px;
+      font-size: 10px;
+      border-radius: 3px;
+      background: var(--nle-card);
+      color: var(--nle-text-sub);
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+    .ingest-tab-btn.active {
+      background: rgba(45, 140, 235, 0.15);
+      color: var(--premiere-blue);
+      border-color: rgba(45, 140, 235, 0.4);
+    }
+    .ingest-input-row {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* Media Dropzone */
+    .bin-dropzone {
+      border: 1.5px dashed var(--nle-border-highlight);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      gap: 8px;
+      font-size: 11px;
+      color: var(--nle-text-sub);
     }
-    .video-frame video {
+    .bin-dropzone:hover, .bin-dropzone.dragover {
+      border-color: var(--premiere-blue);
+      background: rgba(45, 140, 235, 0.05);
+      color: #fff;
+    }
+
+    /* Media Cards List */
+    .media-items-scroll {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .media-item-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      background: var(--nle-card);
+      border: 1px solid var(--nle-border);
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .media-item-card:hover {
+      background: var(--nle-card-hover);
+      border-color: var(--premiere-blue);
+    }
+    .media-card-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      max-width: 72%;
+    }
+    .media-type-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+      background: #141416;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .media-type-icon.video { color: var(--premiere-blue); border: 1px solid rgba(45, 140, 235, 0.3); }
+    .media-type-icon.audio { color: var(--audio-green); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .media-type-icon.ref { color: var(--record-red); border: 1px solid rgba(255, 75, 75, 0.3); }
+
+    .media-card-name { font-size: 11px; font-weight: 500; color: #fff; overflow: hidden; text-overflow: ellipsis; }
+    .media-card-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .media-card-size { font-family: var(--font-mono); font-size: 10px; color: var(--nle-text-dim); }
+    .btn-media-del {
+      background: none; border: none; color: var(--nle-text-dim); cursor: pointer; padding: 2px;
+    }
+    .btn-media-del:hover { color: var(--record-red); }
+
+    /* ================= PANE 2: PROGRAM MONITOR (CENTER) ================= */
+    .program-monitor-pane {
+      background: #0d0d0f;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .monitor-viewport-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: radial-gradient(circle, #1a1a20 0%, #0d0d10 80%);
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    /* Centered 9:16 Vertical Cinema Player Container */
+    .cinema-player-frame {
+      aspect-ratio: 9 / 16;
+      max-height: 100%;
+      height: 100%;
+      background: #000;
+      border: 1px solid #33333e;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cinema-player-frame video {
       width: 100%;
       height: 100%;
       object-fit: contain;
     }
 
-    .publish-side-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
+    /* 9:16 TikTok / Shorts Safe Zone Guides */
+    .safe-zone-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: none;
+      box-sizing: border-box;
+      border: 1.5px dashed rgba(234, 179, 8, 0.6);
     }
-    .export-chips-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+    .safe-zone-overlay.active { display: block; }
+    .sz-header-band {
+      position: absolute; top: 0; left: 0; right: 0; height: 14%;
+      background: rgba(234, 179, 8, 0.08); border-bottom: 1px dashed rgba(234, 179, 8, 0.4);
+      display: flex; align-items: center; justify-content: center; font-size: 9px; color: var(--davinci-gold);
     }
-    .export-chip {
-      background: #0b0e14;
-      border: 1px solid var(--border);
+    .sz-footer-band {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 22%;
+      background: rgba(234, 179, 8, 0.08); border-top: 1px dashed rgba(234, 179, 8, 0.4);
+      display: flex; align-items: center; justify-content: center; font-size: 9px; color: var(--davinci-gold);
+    }
+    .sz-right-band {
+      position: absolute; top: 14%; bottom: 22%; right: 0; width: 16%;
+      background: rgba(234, 179, 8, 0.06); border-left: 1px dashed rgba(234, 179, 8, 0.4);
+      display: flex; align-items: center; justify-content: center; font-size: 8px; color: var(--davinci-gold);
+      writing-mode: vertical-rl;
+    }
+
+    /* Monitor Transport & Timecode Bar */
+    .monitor-transport-bar {
+      height: 44px;
+      background: var(--nle-header);
+      border-top: 1px solid var(--nle-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      flex-shrink: 0;
+    }
+    .timecode-display {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 700;
+      color: #38bdf8;
+      letter-spacing: 1px;
+      background: #09090b;
+      padding: 3px 8px;
       border-radius: var(--radius-sm);
-      padding: 6px 12px;
+      border: 1px solid var(--nle-border);
+    }
+    .transport-controls-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-transport {
+      width: 28px;
+      height: 28px;
+      background: var(--nle-card);
+      border: 1px solid var(--nle-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 11.5px;
+      justify-content: center;
       transition: all 0.15s;
     }
-    .export-chip:hover, .export-chip.active {
-      border-color: var(--cyan);
-      background: rgba(56, 189, 248, 0.08);
+    .btn-transport:hover { background: var(--nle-card-hover); border-color: var(--premiere-blue); }
+    .btn-transport.play-active { background: var(--premiere-blue); border-color: var(--premiere-blue); }
+
+    /* Source Selector Radio Pills */
+    .source-selector-pills {
+      display: flex;
+      gap: 4px;
+      background: #111114;
+      padding: 2px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--nle-border);
+    }
+    .source-pill-btn {
+      padding: 3px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      border-radius: 3px;
+      background: none;
+      border: none;
+      color: var(--nle-text-sub);
+      cursor: pointer;
+    }
+    .source-pill-btn.active {
+      background: var(--nle-card);
       color: #fff;
     }
 
-    /* Bottom Live Terminal Drawer */
-    .cmd-drawer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(11, 14, 20, 0.98);
-      backdrop-filter: blur(16px);
-      border-top: 1px solid var(--border);
-      z-index: 200;
-      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6);
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    /* ================= PANE 3: EFFECT CONTROLS & LUMETRI INSPECTOR ================= */
+    .inspector-pane {
+      background: var(--nle-surface);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
-    .cmd-drawer.collapsed { transform: translateY(calc(100% - 44px)); }
-    .cmd-drawer.expanded { transform: translateY(0); }
-    .drawer-bar {
-      height: 44px;
-      padding: 0 24px;
+    .inspector-content-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .inspector-group-card {
+      background: var(--nle-card);
+      border: 1px solid var(--nle-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .group-card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      cursor: pointer;
-      background: #11151c;
-      border-bottom: 1px solid var(--border);
-      user-select: none;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 4px;
     }
-    .drawer-info {
+    .control-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 12px;
+      justify-content: space-between;
+      font-size: 11.5px;
+      gap: 8px;
     }
-    .drawer-line {
-      color: var(--text-sub);
+    .control-label { color: var(--nle-text-sub); flex-shrink: 0; }
+
+    /* Switch toggle */
+    .switch-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .toggle-checkbox {
+      appearance: none;
+      width: 28px;
+      height: 16px;
+      background: #141418;
+      border: 1px solid var(--nle-border-highlight);
+      border-radius: 10px;
+      position: relative;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .toggle-checkbox::before {
+      content: '';
+      position: absolute;
+      top: 1px; left: 1px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--nle-text-sub);
+      transition: all 0.2s;
+    }
+    .toggle-checkbox:checked {
+      background: var(--premiere-blue);
+      border-color: var(--premiere-blue);
+    }
+    .toggle-checkbox:checked::before {
+      left: 13px;
+      background: #fff;
+    }
+
+    /* Range Sliders */
+    input[type="range"] {
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      background: #121215;
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--premiere-blue);
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(45, 140, 235, 0.5);
+    }
+
+    /* ================= PANE 4: MULTI-TRACK TIMELINE & RENDER CONSOLE ================= */
+    .nle-bottom-pane {
+      background: #121215;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-top: 1px solid var(--nle-border);
+    }
+
+    .timeline-viewport-container {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Track Headers on Left */
+    .timeline-track-headers-col {
+      width: 140px;
+      background: #16161a;
+      border-right: 2px solid var(--nle-border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .track-header-spacer {
+      height: 24px;
+      background: #1a1a20;
+      border-bottom: 1px solid var(--nle-border);
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--nle-text-dim);
+    }
+    .track-header-cell {
+      height: 42px;
+      border-bottom: 1px solid var(--nle-border);
+      padding: 0 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .th-tag {
+      font-size: 9.5px;
+      font-family: var(--font-mono);
+      padding: 1px 4px;
+      border-radius: 2px;
+    }
+
+    /* Timeline Body & Ruler */
+    .timeline-tracks-scroll-area {
+      flex: 1;
+      overflow-x: auto;
+      overflow-y: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: #0f0f12;
+      user-select: none;
+    }
+
+    .timeline-ruler-bar {
+      height: 24px;
+      background: #18181e;
+      border-bottom: 1px solid var(--nle-border);
+      display: flex;
+      align-items: center;
+      position: relative;
+      min-width: 900px;
+      width: 100%;
+      cursor: pointer;
+    }
+    .ruler-tick {
+      position: absolute;
+      bottom: 0;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--nle-text-dim);
+      padding-left: 2px;
+      border-left: 1px solid var(--nle-border);
+      height: 12px;
+    }
+
+    /* Track Lanes */
+    .track-lane-row {
+      height: 42px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
+      min-width: 900px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.15);
+    }
+    .timeline-clip-block {
+      position: absolute;
+      height: 34px;
+      border-radius: 3px;
+      top: 4px;
+      padding: 0 8px;
+      display: flex;
+      align-items: center;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #fff;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      cursor: grab;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    /* Red Timeline Playhead Needle */
+    .timeline-playhead-needle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--record-red);
+      z-index: 50;
+      pointer-events: auto;
+      cursor: ew-resize;
+      transform: translateX(-50%);
+    }
+    .needle-head {
+      width: 12px;
+      height: 12px;
+      background: var(--record-red);
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
+    }
+
+    /* Render Console Terminal (Toggled in Pane 4) */
+    .render-console-view {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      background: #080a0f;
+      overflow: hidden;
+    }
+    .render-console-view.active { display: flex; }
+    .console-stream-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 14px;
       font-family: var(--font-mono);
       font-size: 11px;
-      max-width: 600px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .drawer-body {
-      height: 240px;
-      padding: 12px 24px;
-      overflow-y: auto;
-      font-family: var(--font-mono);
-      font-size: 11.5px;
       line-height: 1.6;
-      background: #080a0f;
     }
-    .term-msg { margin-bottom: 2px; }
-    .term-msg.info { color: var(--cyan); }
-    .term-msg.success { color: var(--green); }
-    .term-msg.warning { color: var(--amber); }
-    .term-msg.error { color: var(--red); }
-    .term-msg.log { color: #cbd5e1; }
-    .term-time { color: var(--text-dim); margin-right: 8px; }
+    .term-line { margin-bottom: 2px; word-break: break-all; }
+    .term-line.info { color: var(--premiere-blue); }
+    .term-line.success { color: var(--audio-green); }
+    .term-line.warning { color: var(--sub-amber); }
+    .term-line.error { color: var(--record-red); }
+    .term-line.log { color: #94a3b8; }
 
-    /* Modal */
-    .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(6px); z-index: 2000;
-      display: none; align-items: center; justify-content: center; padding: 20px;
-    }
-    .modal-box {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); width: 100%; max-width: 580px;
-      max-height: 85vh; overflow-y: auto; padding: 24px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-    }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .pkg-entry {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 8px 12px; background: #0b0e14; border-radius: var(--radius-sm); margin-bottom: 6px; font-size: 12px;
-    }
-
-    .toast-pill {
-      position: fixed; bottom: 54px; right: 24px;
-      background: #1e293b; color: #fff; border: 1px solid var(--border);
-      padding: 10px 16px; border-radius: var(--radius-sm);
-      font-size: 12px; z-index: 3000; opacity: 0; transform: translateY(20px);
-      transition: all 0.25s ease;
-    }
-    .toast-pill.show { opacity: 1; transform: translateY(0); }
-
-    .grid-2col {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    /* Floating Studio Chat & Video Feedback FAB */
+    /* Floating Studio Chat Widget */
     .chat-fab-btn {
       position: fixed;
-      bottom: 58px;
+      bottom: 20px;
       right: 20px;
       z-index: 250;
-      background: linear-gradient(135deg, #0284c7, #9333ea);
+      background: linear-gradient(135deg, var(--premiere-blue), var(--bgm-purple));
       color: #fff;
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 30px;
-      padding: 10px 18px;
+      padding: 9px 16px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
       font-weight: 700;
-      font-size: 12px;
+      font-size: 11.5px;
       cursor: pointer;
-      box-shadow: 0 8px 26px rgba(2, 132, 199, 0.45);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 8px 24px rgba(45, 140, 235, 0.45);
+      transition: all 0.2s;
     }
-    .chat-fab-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 32px rgba(147, 51, 234, 0.6);
-    }
-    .chat-fab-badge {
-      background: var(--amber);
-      color: #0b0e14;
-      font-size: 9.5px;
-      font-weight: 800;
-      padding: 1px 6px;
-      border-radius: 10px;
-    }
-
-    /* Floating Chat Window Box */
+    .chat-fab-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(168, 85, 247, 0.5); }
     .chat-widget-box {
       position: fixed;
-      bottom: 110px;
+      bottom: 74px;
       right: 20px;
-      width: 380px;
+      width: 360px;
       max-width: calc(100vw - 28px);
-      height: 520px;
-      max-height: 75vh;
-      background: #101522;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75);
+      height: 480px;
+      max-height: 70vh;
+      background: #141418;
+      border: 1.5px solid var(--nle-border-highlight);
+      border-radius: var(--radius-md);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
       display: none;
       flex-direction: column;
       z-index: 300;
       overflow: hidden;
       backdrop-filter: blur(16px);
-      animation: chatSlideIn 0.22s ease-out;
     }
     .chat-widget-box.open { display: flex; }
-    @keyframes chatSlideIn {
-      from { opacity: 0; transform: translateY(16px) scale(0.97); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
     .chat-header {
-      padding: 12px 16px;
-      background: #141b2c;
-      border-bottom: 1px solid var(--border);
+      padding: 10px 14px;
+      background: #1c1c22;
+      border-bottom: 1px solid var(--nle-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .chat-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--cyan), var(--purple));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-    }
-
     .chat-quick-chips {
       display: flex;
-      gap: 6px;
-      padding: 8px 12px;
-      background: #0b0f17;
+      gap: 5px;
+      padding: 6px 10px;
+      background: #0d0d10;
       overflow-x: auto;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--nle-border);
       scrollbar-width: none;
     }
     .chat-quick-chips::-webkit-scrollbar { display: none; }
     .chip-btn {
-      background: #182032;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      font-size: 10.5px;
-      color: var(--text-sub);
-      padding: 4px 10px;
+      background: #1a1a20;
+      border: 1px solid var(--nle-border);
+      border-radius: 12px;
+      font-size: 10px;
+      color: var(--nle-text-sub);
+      padding: 3px 8px;
       white-space: nowrap;
       cursor: pointer;
-      transition: all 0.15s;
       flex-shrink: 0;
     }
-    .chip-btn:hover {
-      border-color: var(--cyan);
-      color: #fff;
-      background: rgba(56, 189, 248, 0.12);
-    }
-
+    .chip-btn:hover { border-color: var(--premiere-blue); color: #fff; }
     .chat-messages-body {
       flex: 1;
       overflow-y: auto;
-      padding: 14px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      font-size: 12.5px;
-      background: #0b0f17;
+      gap: 10px;
+      font-size: 11.5px;
+      background: #0d0d10;
     }
-    .chat-bubble {
-      padding: 10px 14px;
-      border-radius: 14px;
-      line-height: 1.45;
-      word-break: break-word;
-    }
-    .chat-bubble.bot {
-      align-self: flex-start;
-      max-width: 88%;
-      background: #141b2a;
-      border: 1px solid var(--border);
-      color: #e2e8f0;
-      border-bottom-left-radius: 3px;
-    }
-    .chat-bubble.user {
-      align-self: flex-end;
-      max-width: 88%;
-      background: linear-gradient(135deg, #0284c7, #7c3aed);
+    .chat-bubble { padding: 8px 12px; border-radius: 10px; line-height: 1.4; word-break: break-word; }
+    .chat-bubble.bot { align-self: flex-start; max-width: 88%; background: #1a1a22; border: 1px solid var(--nle-border); color: #e2e8f0; }
+    .chat-bubble.user { align-self: flex-end; max-width: 88%; background: var(--premiere-blue); color: #fff; }
+    .chat-input-bar { display: flex; gap: 6px; padding: 8px 12px; background: #181820; border-top: 1px solid var(--nle-border); }
+
+    /* Toast */
+    .toast-pill {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(30px);
+      background: #1e293b;
       color: #fff;
-      border-bottom-right-radius: 3px;
-      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+      border: 1px solid var(--premiere-blue);
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 11.5px;
+      z-index: 3500;
+      opacity: 0;
+      transition: all 0.25s;
+      pointer-events: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
     }
+    .toast-pill.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    .chat-input-bar {
-      display: flex;
-      gap: 8px;
-      padding: 10px 14px;
-      background: #141b2a;
-      border-top: 1px solid var(--border);
-    }
+    /* ================= MOBILE RESPONSIVE FALLBACK (< 880px) ================= */
+    @media (max-width: 880px) {
+      body { overflow-y: auto; height: auto; }
+      .nle-app-container { height: auto; }
+      .nle-top-bar { height: auto; flex-direction: column; padding: 8px; gap: 8px; }
+      .nle-top-left, .nle-top-right { width: 100%; justify-content: space-between; flex-wrap: wrap; }
+      .nle-workspaces-row { width: 100%; justify-content: space-around; }
 
-    /* Comprehensive Mobile-Friendly CSS (< 768px) */
-    @media (max-width: 768px) {
-      header {
+      .nle-body-grid {
+        display: flex;
         flex-direction: column;
-        align-items: stretch;
-        padding: 10px 14px;
-        gap: 10px;
+        height: auto;
       }
-      .brand-wrap {
-        justify-content: space-between;
-      }
-      .header-tools {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        width: 100%;
-      }
-      .header-tools .status-pill, .header-tools .session-pill {
-        grid-column: span 1;
-        justify-content: center;
-        font-size: 10.5px;
-        padding: 4px 8px;
-      }
-      .header-tools .btn {
-        padding: 6px 8px;
-        font-size: 11px;
-        justify-content: center;
-      }
-
-      .app-wrap {
-        padding: 0 10px;
-        margin: 12px auto;
-        gap: 16px;
-      }
-
-      .folders-trio {
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
-      .folder-tile {
-        padding: 14px 16px;
-      }
-
-      .folder-workspace-card, .export-studio-card {
-        padding: 14px;
-        border-radius: var(--radius-md);
-      }
-
-      .grid-2col {
-        grid-template-columns: 1fr !important;
-        gap: 12px !important;
-      }
-
-      .clean-dropzone {
-        padding: 16px 12px;
-      }
-
-      .export-controls-bar {
-        padding: 10px 12px;
+      .nle-top-panes {
+        display: flex;
         flex-direction: column;
-        align-items: stretch;
+        height: auto;
       }
-      .quality-select-wrap {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      #exportQualitySelect {
-        width: 100% !important;
-        min-width: unset !important;
-      }
+      .docked-pane { height: 380px; border-right: none; border-bottom: 2px solid #000; }
+      .program-monitor-pane { height: 480px; }
+      .nle-bottom-pane { height: 280px; }
 
-      .hero-actions-trio {
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
-
-      .preview-publish-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-      }
-
-      .video-frame {
-        max-height: 52vh;
-        max-width: 290px;
-        margin: 0 auto;
-      }
-
-      .chat-fab-btn {
-        bottom: 50px;
-        right: 12px;
-        padding: 8px 14px;
-        font-size: 11px;
-      }
-
-      .chat-widget-box {
-        bottom: 96px;
-        right: 8px;
-        left: 8px;
-        width: auto;
-        max-width: none;
-        height: 65vh;
-        max-height: 500px;
-      }
-
-      input[type="text"], textarea, select {
-        font-size: 16px !important; /* Prevents auto-zoom on iOS/Android keyboards */
-      }
+      .chat-fab-btn { bottom: 12px; right: 12px; }
+      .chat-widget-box { right: 8px; left: 8px; width: auto; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Sticky Header -->
-  <header>
-    <div class="brand-wrap">
-      <div class="brand-logo">
-        <svg viewBox="0 0 24 24"><path d="M4 6.5C4 5.12 5.12 4 6.5 4h11C18.88 4 20 5.12 20 6.5v11c0 1.38-1.12 2.5-2.5 2.5h-11C5.12 20 4 18.88 4 17.5v-11zm5.5 3.75v3.5a.75.75 0 0 0 1.15.64l3.5-1.75a.75.75 0 0 0 0-1.28l-3.5-1.75a.75.75 0 0 0-1.15.64z"/></svg>
+<div class="nle-app-container">
+
+  <!-- ================= TOP MENU & WORKSPACE BAR ================= -->
+  <header class="nle-top-bar">
+    <div class="nle-top-left">
+      <div class="nle-logo-badge">
+        <span class="pr-pill">Pr</span>
+        <span>STUDIO NLE</span>
+        <span style="font-size:9.5px; color:var(--nle-text-dim); font-weight:normal;">v2.5 PRO</span>
       </div>
-      <div>
-        <div class="brand-title">
-          <span>AI VIDEO STUDIO</span>
-          <span style="font-size:10px; background:rgba(56,189,248,0.12); color:var(--cyan); border:1px solid rgba(56,189,248,0.3); padding:1px 6px; border-radius:8px;">CLOUD SAAS</span>
-        </div>
-        <div class="brand-subtitle">3 Folders Input &rarr; Step 4 Export & Edit</div>
+
+      <!-- Premiere Workspace Layout Switcher -->
+      <div class="nle-workspaces-row">
+        <button class="workspace-tab-btn active" id="wsBtnAssembly" onclick="switchWorkspaceLayout('assembly')">Assembly</button>
+        <button class="workspace-tab-btn" id="wsBtnColor" onclick="switchWorkspaceLayout('color')">Color & Effects</button>
+        <button class="workspace-tab-btn" id="wsBtnAudio" onclick="switchWorkspaceLayout('audio')">Audio Master</button>
+        <button class="workspace-tab-btn" id="wsBtnExport" onclick="switchWorkspaceLayout('export')">Export & Publish</button>
       </div>
     </div>
 
-    <div class="header-tools">
-      <!-- Multi-User Session Pill -->
-      <div class="session-pill">
-        <span>Session:</span>
-        <strong id="sessionDisplayTag">#...</strong>
-        <button class="btn-new-session" onclick="resetNewSession()" title="Start clean workspace">(New)</button>
+    <div class="nle-top-right">
+      <div class="session-badge">
+        <span>SESSION:</span>
+        <strong id="sessionTagDisplay" style="color:var(--premiere-blue);">#...</strong>
+        <button class="btn-reset" onclick="resetStudioSession()" title="Start clean session workspace">(New)</button>
       </div>
 
-      <div class="status-pill">
-        <span class="dot" id="headerDot"></span>
-        <span id="headerStatusText">🟢 Cloud Ready • Live</span>
+      <div class="health-pill" id="healthPill" title="System Engine Health: ffmpeg, yt-dlp, whisper OK">
+        <span class="live-dot" id="headerLiveDot"></span>
+        <span id="healthPillText">Railway Live • ffmpeg | yt-dlp | whisper</span>
       </div>
 
-      <button class="btn btn-default" onclick="openSetupModal()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-        System Tools Check
+      <button class="btn btn-primary" onclick="quickRenderActiveProject()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Render Project
       </button>
 
-      <button class="btn btn-default" onclick="refreshWorkspace()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
-        Sync
+      <button class="btn btn-sm" onclick="syncProjectWorkspace()" title="Re-sync files and timeline">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
       </button>
     </div>
   </header>
 
-  <!-- Main App Layout -->
-  <main class="app-wrap">
+  <!-- ================= MAIN VIEWPORT ================= -->
+  <div class="nle-body-grid">
+    
+    <!-- Top 3-Pane Row -->
+    <div class="nle-top-panes">
 
-    <!-- STEP 1: 3 MAIN INPUT FOLDERS ("phle 3 folder dikhe sb open krke dekhe tb pata chale") -->
-    <div>
-      <div class="section-title-wrap">
-        <div class="section-heading">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          Input Folders (Click a folder to view & add files)
-        </div>
-        <span class="section-sub">Click any folder below to open its contents</span>
-      </div>
-
-      <!-- 3 Big Folder Tiles -->
-      <div class="folders-trio">
-        
-        <!-- Folder Tile 1 -->
-        <div class="folder-tile ft-raw active" id="tileRaw" onclick="switchFolder('raw')">
-          <div class="folder-tile-left">
-            <div class="folder-tile-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-            </div>
-            <div>
-              <div class="folder-tile-name">1. Raw video</div>
-              <div class="folder-tile-desc">Camera clips & YouTube links</div>
-            </div>
+      <!-- ================= PANE 1: PROJECT MEDIA BIN (TOP-LEFT) ================= -->
+      <section class="docked-pane" id="paneMediaBin">
+        <div class="pane-header-bar">
+          <div class="pane-title-group">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            <span>Project Media Bin</span>
           </div>
-          <div>
-            <span class="folder-tile-badge" id="badgeRaw">0 clips</span>
-            <div class="folder-open-hint">Open ▼</div>
-          </div>
-        </div>
-
-        <!-- Folder Tile 2 -->
-        <div class="folder-tile ft-ref" id="tileRef" onclick="switchFolder('ref')">
-          <div class="folder-tile-left">
-            <div class="folder-tile-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-            </div>
-            <div>
-              <div class="folder-tile-name">2. References</div>
-              <div class="folder-tile-desc">Sample video & style pacing link</div>
-            </div>
-          </div>
-          <div>
-            <span class="folder-tile-badge" id="badgeRef">0 files</span>
-            <div class="folder-open-hint">Open ▼</div>
+          <!-- Folder Switcher Tabs -->
+          <div class="pane-tabs-row">
+            <button class="pane-tab-item active" id="tabBinRaw" onclick="switchBinFolder('raw')">
+              <span>Raw</span>
+              <span id="badgeCountRaw" style="font-size:9.5px; opacity:0.8;">(0)</span>
+            </button>
+            <button class="pane-tab-item" id="tabBinRef" onclick="switchBinFolder('ref')">
+              <span>Ref</span>
+              <span id="badgeCountRef" style="font-size:9.5px; opacity:0.8;">(0)</span>
+            </button>
+            <button class="pane-tab-item" id="tabBinAudio" onclick="switchBinFolder('audio')">
+              <span>Audio</span>
+              <span id="badgeCountAudio" style="font-size:9.5px; opacity:0.8;">(0)</span>
+            </button>
+            <button class="pane-tab-item" id="tabBinExport" onclick="switchBinFolder('export')">
+              <span>Export</span>
+              <span id="badgeCountExport" style="font-size:9.5px; opacity:0.8;">(0)</span>
+            </button>
           </div>
         </div>
 
-        <!-- Folder Tile 3 -->
-        <div class="folder-tile ft-audio" id="tileAudio" onclick="switchFolder('audio')">
-          <div class="folder-tile-left">
-            <div class="folder-tile-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <div class="media-bin-body">
+          <!-- Compact URL Ingestion Strip -->
+          <div class="url-ingest-strip">
+            <div class="ingest-tabs">
+              <button class="ingest-tab-btn active" id="btnIngestYt" onclick="setIngestTarget('yt')">YouTube Clips</button>
+              <button class="ingest-tab-btn" id="btnIngestInsta" onclick="setIngestTarget('insta')">Insta Audio</button>
+              <button class="ingest-tab-btn" id="btnIngestRef" onclick="setIngestTarget('ref')">Style Reel</button>
             </div>
-            <div>
-              <div class="folder-tile-name">3. audio</div>
-              <div class="folder-tile-desc">Voiceover, AI speech & BGM</div>
+            <div class="ingest-input-row">
+              <input type="text" id="urlIngestInput" placeholder="Paste YouTube link -> Raw video/links.txt...">
+              <button class="btn btn-sm btn-primary" onclick="saveActiveIngestLink()">Save</button>
+              <button class="btn btn-sm btn-danger" onclick="clearActiveIngestLink()">Clear</button>
             </div>
           </div>
-          <div>
-            <span class="folder-tile-badge" id="badgeAudio">0 files</span>
-            <div class="folder-open-hint">Open ▼</div>
+
+          <!-- Drag & Drop Zone -->
+          <div class="bin-dropzone" id="binDropzone" onclick="triggerActiveFolderUpload()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span id="dropzoneText">Drop clips or click to import</span>
+            <input type="file" id="mediaFileInput" multiple style="display:none;" onchange="handleFileUpload(this.files)">
+          </div>
+
+          <!-- Media Files List -->
+          <div class="media-items-scroll" id="mediaItemsContainer">
+            <div style="padding:20px; text-align:center; color:var(--nle-text-dim); font-size:11px;">Loading media files...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= PANE 2: PROGRAM MONITOR (CENTER) ================= -->
+      <section class="docked-pane program-monitor-pane" id="paneProgramMonitor">
+        <div class="pane-header-bar">
+          <div class="pane-title-group">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span id="monitorActiveTitle">Program: final_video.mp4</span>
+          </div>
+
+          <!-- Source Switcher (Program Output vs Reference Reel) -->
+          <div class="source-selector-pills">
+            <button class="source-pill-btn active" id="btnSrcProgram" onclick="switchMonitorSource('program')">Program Out</button>
+            <button class="source-pill-btn" id="btnSrcReference" onclick="switchMonitorSource('reference')">Ref Style Reel</button>
           </div>
         </div>
 
-      </div>
-    </div>
-
-    <!-- ACTIVE FOLDER WORKSPACE DRAWER -->
-    <div class="folder-workspace-card">
-
-      <!-- ================= PANE 1: Raw video ================= -->
-      <div id="paneRaw">
-        <div class="folder-workspace-header">
-          <div class="folder-workspace-title">
-            <span style="color:var(--cyan);">📁 Raw video/</span>
-            <span style="font-size:12px; color:var(--text-sub); font-weight:normal;">— Camera footage, screen records, and YouTube downloads</span>
-          </div>
-          <span class="folder-tile-badge" id="paneRawBadge">0 clips</span>
-        </div>
-        <div class="folder-workspace-body">
-          
-          <div class="grid-2col">
-            <!-- Dropzone -->
-            <div class="clean-dropzone" onclick="document.getElementById('fileInRaw').click()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span class="clean-dropzone-title">Upload Raw Video Clips</span>
-              <span class="clean-dropzone-sub">Drop .mp4, .mov, or .mkv here or tap to pick from Gallery</span>
-              <input type="file" id="fileInRaw" multiple accept=".mp4,.mov,.mkv,video/*" style="display:none;" onchange="uploadFiles(this.files, 'raw')">
-            </div>
-
-            <!-- YouTube Link Box -->
-            <div class="clean-input-box">
-              <div class="clean-input-title">
-                <span>YouTube Clip Links &rarr; Raw video/links.txt</span>
-                <button class="btn btn-danger" style="padding:2px 8px; font-size:10px;" onclick="clearLinkType('yt')">Clear</button>
-              </div>
-              <textarea id="rawYtLinks" placeholder="https://www.youtube.com/watch?v=... (one link per line)"></textarea>
-              <button class="btn btn-cyan" onclick="saveRawLinks()">Save to links.txt</button>
-            </div>
-          </div>
-
-          <!-- File List -->
-          <div class="file-table-box">
-            <div class="file-table-header">
-              <span>Files currently in Raw video/</span>
-              <span>Size & Actions</span>
-            </div>
-            <div class="file-rows-list" id="rawFileList">
-              <div class="empty-state">Loading files...</div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- ================= PANE 2: References ================= -->
-      <div id="paneRef" style="display:none;">
-        <div class="folder-workspace-header">
-          <div class="folder-workspace-title">
-            <span style="color:var(--pink);">📁 References/</span>
-            <span style="font-size:12px; color:var(--text-sub); font-weight:normal;">— Style reel sample and Instagram link for pacing match</span>
-          </div>
-          <span class="folder-tile-badge" id="paneRefBadge">0 files</span>
-        </div>
-        <div class="folder-workspace-body">
-          
-          <div class="grid-2col">
-            <!-- Dropzone -->
-            <div class="clean-dropzone" onclick="document.getElementById('fileInRef').click()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span class="clean-dropzone-title">Upload Style Sample Video</span>
-              <span class="clean-dropzone-sub">Saves as References/ref_sample.mp4</span>
-              <input type="file" id="fileInRef" accept=".mp4,.mov,video/*" style="display:none;" onchange="uploadFiles(this.files, 'reference')">
-            </div>
-
-            <!-- Reference Link Box -->
-            <div class="clean-input-box">
-              <div class="clean-input-title">
-                <span>Reference Style Reel Link &rarr; References/style_link.txt</span>
-                <button class="btn btn-danger" style="padding:2px 8px; font-size:10px;" onclick="clearLinkType('ref')">Clear</button>
-              </div>
-              <input type="text" id="refStyleLink" placeholder="https://www.instagram.com/reel/... (for pacing & cut-speed)">
-              <button class="btn btn-pink" onclick="saveRefLinks()">Save to style_link.txt</button>
-            </div>
-          </div>
-
-          <!-- File List -->
-          <div class="file-table-box">
-            <div class="file-table-header">
-              <span>Files currently in References/</span>
-              <span>Size & Actions</span>
-            </div>
-            <div class="file-rows-list" id="refFileList">
-              <div class="empty-state">Loading files...</div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- ================= PANE 3: audio ================= -->
-      <div id="paneAudio" style="display:none;">
-        <div class="folder-workspace-header">
-          <div class="folder-workspace-title">
-            <span style="color:var(--purple);">📁 audio/</span>
-            <span style="font-size:12px; color:var(--text-sub); font-weight:normal;">— Voiceover recordings, AI Hindi speech, and background music</span>
-          </div>
-          <span class="folder-tile-badge" id="paneAudioBadge">0 files</span>
-        </div>
-        <div class="folder-workspace-body">
-          
-          <div class="grid-2col">
-            <!-- Real Voice Dropzone -->
-            <div class="clean-dropzone" onclick="document.getElementById('fileInVoice').click()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-              <span class="clean-dropzone-title">Upload Real Voice</span>
-              <span class="clean-dropzone-sub">Saves as audio/my_voice.mp3 (.mp3, .wav, .m4a)</span>
-              <input type="file" id="fileInVoice" accept=".mp3,.wav,.m4a,audio/*" style="display:none;" onchange="uploadFiles(this.files, 'voice')">
-            </div>
-
-            <!-- BGM Dropzone -->
-            <div class="clean-dropzone" onclick="document.getElementById('fileInBgm').click()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-              <span class="clean-dropzone-title">Upload Custom BGM</span>
-              <span class="clean-dropzone-sub">Saves as audio/bgm.mp3</span>
-              <input type="file" id="fileInBgm" accept=".mp3,audio/*" style="display:none;" onchange="uploadFiles(this.files, 'bgm')">
-            </div>
-          </div>
-
-          <div class="grid-2col">
-            <!-- Trending Audio Link -->
-            <div class="clean-input-box">
-              <div class="clean-input-title">
-                <span>Instagram Trending Audio Link &rarr; audio/insta_link.txt</span>
-                <button class="btn btn-danger" style="padding:2px 8px; font-size:10px;" onclick="clearLinkType('insta')">Clear</button>
-              </div>
-              <input type="text" id="instaAudioLink" placeholder="https://www.instagram.com/reels/audio/... or reel URL">
-              <button class="btn btn-purple" onclick="saveInstaAudioLink()">Save to insta_link.txt</button>
-            </div>
-
-            <!-- AI Hindi Script -->
-            <div class="clean-input-box">
-              <div class="clean-input-title">
-                <span>AI Hindi Voice Script (metadata.json)</span>
-                <span id="scriptStats" style="font-size:10px; color:var(--text-sub);">0 words</span>
-              </div>
-              <textarea id="aiScriptText" placeholder="Write full Hindi/Hinglish speech script here..."></textarea>
-              <button class="btn btn-default" onclick="saveAiScript()">Save Script</button>
-            </div>
-          </div>
-
-          <!-- File List -->
-          <div class="file-table-box">
-            <div class="file-table-header">
-              <span>Files currently in audio/</span>
-              <span>Size & Actions</span>
-            </div>
-            <div class="file-rows-list" id="audioFileList">
-              <div class="empty-state">Loading files...</div>
-            </div>
-          </div>
-
-          <!-- Pro Audio Mastering Info (Collapsible) -->
-          <div class="pro-pipeline-pill" onclick="toggleDetails('audioProDetails')">
-            <span style="font-size:12px; font-weight:700; color:var(--green); display:flex; align-items:center; gap:8px;">
-              ✓ Pro Studio Audio Chain Active (audio_master.py)
-            </span>
-            <span style="font-size:11px; color:var(--text-sub);" id="audioProDetailsToggle">Show Chain Details ▾</span>
-          </div>
-          <div id="audioProDetails" style="display:none;">
-            <div class="pro-tags-grid">
-              <div class="pro-tag-item"><div class="pro-tag-name">🔇 Noise & Fan Removal</div><div class="pro-tag-sub">afftdn=-25dB • 85Hz HPF • 14.5kHz LPF</div></div>
-              <div class="pro-tag-item"><div class="pro-tag-name">🎙️ Radio Bass & Clarity EQ</div><div class="pro-tag-sub">120Hz +3.5dB • 320Hz -2.5dB • 3.5kHz +3dB</div></div>
-              <div class="pro-tag-item"><div class="pro-tag-name">📉 Auto Sidechain Ducking</div><div class="pro-tag-sub">BGM ducks 6:1 under speech audio</div></div>
-              <div class="pro-tag-item"><div class="pro-tag-name">🔊 Broadcast -14 LUFS</div><div class="pro-tag-sub">loudnorm=I=-14:TP=-1.5:LRA=7</div></div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ================= STEP 4: EXPORT & CREATE ================= -->
-    <div class="export-studio-card">
-      <div class="section-title-wrap">
-        <div class="section-heading">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Step 4: Export & Create Studio
-        </div>
-        <button class="btn btn-danger" id="btnStopRun" style="display:none; padding:4px 10px; font-size:11px;" onclick="stopEngine()">
-          ⏹️ Stop Current Task
-        </button>
-      </div>
-
-      <!-- Controls & Quality Select -->
-      <div class="export-controls-bar">
-        <div class="quality-select-wrap">
-          <label style="font-weight:700; color:#fff; display:flex; align-items:center; gap:6px;">
-            <span>Export Quality:</span>
-          </label>
-          <select id="exportQualitySelect" onchange="updateQualityBadgeHint()" style="width:auto; min-width:280px; font-weight:600; cursor:pointer;">
-            <option value="auto" selected>Auto (4K if Raw Video is 4K, else 1080p)</option>
-            <option value="1080p">1080p Full HD (Fast - Best for Daily Shorts/Reels)</option>
-            <option value="4k">4K Ultra HD (2160x3840 @ 35 Mbps)</option>
-          </select>
-          <span id="qualityBadgeHint" style="font-size:11px; color:var(--cyan); font-family:var(--font-mono); font-weight:600;">Auto 4K Sensing</span>
-        </div>
-
-        <!-- Pro Video FX Pill -->
-        <div class="pro-pipeline-pill" style="padding:6px 12px;" onclick="toggleDetails('videoProDetails')">
-          <span style="font-size:11px; font-weight:700; color:var(--green);">✓ DaVinci & Premiere FX Active</span>
-          <span style="font-size:10px; color:var(--text-sub); margin-left:8px;" id="videoProDetailsToggle">Details ▾</span>
-        </div>
-      </div>
-
-      <!-- Pro Video FX Details (Collapsed by default) -->
-      <div id="videoProDetails" style="display:none;">
-        <div class="pro-tags-grid">
-          <div class="pro-tag-item"><div class="pro-tag-name">🎨 DaVinci Grade & Vignette</div><div class="pro-tag-sub">HSV +20% sat • warm highlights • 30% vignette</div></div>
-          <div class="pro-tag-item"><div class="pro-tag-name">⚡ Whip-Pan & Punch Zoom</div><div class="pro-tag-sub">0.10s flash • 1.08x zoom • 75px motion blur</div></div>
-          <div class="pro-tag-item"><div class="pro-tag-name">✂️ Silence Jump-Cuts</div><div class="pro-tag-sub">Auto cuts dead air (-30dB, 0.15s min pause)</div></div>
-          <div class="pro-tag-item"><div class="pro-tag-name">🟡 Word-Synced Captions</div><div class="pro-tag-sub">Yellow Impact text with black shadow stroke</div></div>
-        </div>
-      </div>
-
-      <!-- Real-Time Queue & Worker Banner -->
-      <div class="queue-status-banner" id="queueStatusBanner">
-        <span id="queueStatusText">⚡ Render Engine Ready • Cloud worker pool: 3 concurrent slots</span>
-        <span id="queueTimeText" style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim);">Idle</span>
-      </div>
-
-      <!-- 3 Big Action Buttons -->
-      <div class="hero-actions-trio">
-        
-        <div class="hero-btn-card" style="--btn-color: var(--cyan);" onclick="launchEngine('auto_pilot')">
-          <div>
-            <h3>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Auto-Upload YT Short
-            </h3>
-            <p>AI/Real Voice &rarr; B-Roll &rarr; Auto-Captions &rarr; DaVinci Grade &rarr; YouTube Upload.</p>
-          </div>
-          <button class="btn btn-cyan" style="width:100%;">
-            Run auto_pilot.py
-          </button>
-        </div>
-
-        <div class="hero-btn-card" style="--btn-color: var(--purple);" onclick="launchEngine('vlog_pro')">
-          <div>
-            <h3>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
-              Edit My Self-Vlog
-            </h3>
-            <p>Silence cuts &rarr; alternating punch-zooms &rarr; 9:16 vertical crop &rarr; audio leveling.</p>
-          </div>
-          <button class="btn btn-purple" style="width:100%;">
-            Run vlog_pro.py
-          </button>
-        </div>
-
-        <div class="hero-btn-card" style="--btn-color: var(--pink);" onclick="launchEngine('insta_reel')">
-          <div>
-            <h3>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-              Edit Insta Reel
-            </h3>
-            <p>Matches reference pacing rhythm &rarr; overlays trending Instagram audio.</p>
-          </div>
-          <button class="btn btn-pink" style="width:100%;">
-            Run insta_reel.py
-          </button>
-        </div>
-
-      </div>
-
-      <!-- Preview Player & Direct Publish Actions -->
-      <div class="preview-publish-grid">
-        
-        <!-- Video Player -->
-        <div>
-          <div class="video-frame">
-            <video id="mainVideoPlayer" controls playsinline preload="metadata">
+        <!-- Cinema Monitor Viewport -->
+        <div class="monitor-viewport-area">
+          <div class="cinema-player-frame" id="cinemaPlayerFrame">
+            <video id="mainProgramVideo" playsinline preload="metadata">
               Your browser does not support HTML5 video.
             </video>
+
+            <!-- 9:16 TikTok / Shorts Safe Zone Guides -->
+            <div class="safe-zone-overlay" id="safeZoneOverlay">
+              <div class="sz-header-band">Title & Search Bar Safety Margin (Top 14%)</div>
+              <div class="sz-footer-band">Captions, Audio & Account Info Margin (Bottom 22%)</div>
+              <div class="sz-right-band">Like & Share Icons (16%)</div>
+            </div>
           </div>
         </div>
 
-        <!-- Right Side: Export switcher, direct download, and YouTube panel -->
-        <div class="publish-side-panel">
-          
-          <div>
-            <span style="font-size:12px; font-weight:700; color:#fff; display:block; margin-bottom:8px;">
-              Select Rendered Video in Export/
-            </span>
-            <div class="export-chips-row" id="exportChipsList">
-              <!-- Rendered chips injected dynamically -->
+        <!-- Monitor Transport Controls & Digital Timecode Bar -->
+        <div class="monitor-transport-bar">
+          <div class="timecode-display" id="timecodeDisplay">00:00:00:00</div>
+
+          <!-- Transport Buttons -->
+          <div class="transport-controls-group">
+            <button class="btn-transport" onclick="stepFrame(-30)" title="Step -1 Sec [J]">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg>
+            </button>
+            <button class="btn-transport" id="btnPlayPause" onclick="togglePlayPause()" title="Play / Pause [Space]">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" id="playIconSvg"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <button class="btn-transport" onclick="stepFrame(30)" title="Step +1 Sec [L]">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 19 22 12 13 5 13 19"/><polygon points="2 19 11 12 2 5 2 19"/></svg>
+            </button>
+            <button class="btn-transport" onclick="stepToStart()" title="Step to Start [Home]">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><line x1="6" y1="5" x2="6" y2="19" stroke="currentColor" stroke-width="2"/><polygon points="18 19 8 12 18 5 18 19"/></svg>
+            </button>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button class="btn btn-sm" id="btnToggleSafeZone" onclick="toggleSafeZone()" title="Toggle TikTok / Shorts 9:16 Safe Zone Guides">
+              🛡️ Safe Zone
+            </button>
+            <button class="btn btn-sm" onclick="toggleFullscreen()" title="Fullscreen Preview">
+              ⛶
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= PANE 3: EFFECT CONTROLS & LUMETRI (RIGHT) ================= -->
+      <section class="docked-pane inspector-pane" id="paneInspector">
+        <div class="pane-header-bar">
+          <div class="pane-title-group">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Inspector</span>
+          </div>
+          <!-- Inspector Tabs -->
+          <div class="pane-tabs-row">
+            <button class="pane-tab-item active" id="tabInspMotion" onclick="switchInspectorTab('motion')">Motion</button>
+            <button class="pane-tab-item" id="tabInspLumetri" onclick="switchInspectorTab('lumetri')">Lumetri</button>
+            <button class="pane-tab-item" id="tabInspSound" onclick="switchInspectorTab('sound')">Sound</button>
+            <button class="pane-tab-item" id="tabInspExport" onclick="switchInspectorTab('export')">Export</button>
+          </div>
+        </div>
+
+        <div class="inspector-content-scroll">
+
+          <!-- TAB 1: MOTION & CUTS -->
+          <div class="insp-tab-content" id="inspTabMotion">
+            <div class="inspector-group-card">
+              <div class="group-card-header">
+                <span>✂️ Cuts & Silence Detection</span>
+                <span style="font-size:9.5px; color:var(--audio-green);">vlog_pro.py</span>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Auto Silence Jump-Cut</span>
+                <label class="switch-wrap">
+                  <input type="checkbox" id="chkJumpCuts" class="toggle-checkbox" checked onchange="saveInspectorMeta()">
+                </label>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Silence Threshold</span>
+                <span style="font-family:var(--font-mono); font-size:10.5px; color:#fff;">-30 dB (0.15s)</span>
+              </div>
+            </div>
+
+            <div class="inspector-group-card">
+              <div class="group-card-header">
+                <span>⚡ Transitions & Dynamic Zoom</span>
+                <span style="font-size:9.5px; color:var(--premiere-blue);">build_video.py</span>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Alternating Punch Zoom</span>
+                <input type="range" id="rngPunchZoom" min="1.0" max="1.20" step="0.02" value="1.08" oninput="updatePunchZoomLabel(this.value)" onchange="saveInspectorMeta()">
+                <span id="lblPunchZoom" style="font-family:var(--font-mono); font-size:10px; width:34px;">1.08x</span>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Whip-Pan Flash (0.10s)</span>
+                <label class="switch-wrap">
+                  <input type="checkbox" id="chkWhipPan" class="toggle-checkbox" checked onchange="saveInspectorMeta()">
+                </label>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Reference Pacing Speed</span>
+                <select id="selCutPacing" onchange="saveInspectorMeta()" style="width:130px;">
+                  <option value="fast">Fast (1.2s)</option>
+                  <option value="balanced" selected>Balanced (1.8s)</option>
+                  <option value="cinematic">Cinematic (2.5s)</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <!-- Big Direct Download Button -->
-          <a class="btn btn-green" id="btnDirectDownload" href="#" download style="padding:12px; font-size:13.5px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download MP4 for Instagram / Facebook / Other Media
-          </a>
-
-          <!-- YouTube Publish Section -->
-          <div class="clean-input-box" style="margin-top:4px;">
-            <div class="clean-input-title">
-              <span>Publish to YouTube Channel (upload_youtube.py)</span>
-              <span id="selectedVideoLabel" style="color:var(--cyan); font-family:var(--font-mono);">final_video.mp4</span>
+          <!-- TAB 2: LUMETRI COLOR -->
+          <div class="insp-tab-content" id="inspTabLumetri" style="display:none;">
+            <div class="inspector-group-card">
+              <div class="group-card-header">
+                <span>🎨 DaVinci Grade Preset</span>
+                <span style="font-size:9.5px; color:var(--davinci-gold);">HSV Matrix</span>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Color Preset</span>
+                <select id="selColorPreset" onchange="saveInspectorMeta()">
+                  <option value="davinci" selected>DaVinci Warm Highlights (+20% Sat)</option>
+                  <option value="cinema">Cinema Skin Tone Glow</option>
+                  <option value="moody">Moody Dark Shadows</option>
+                  <option value="vibrant">Vibrant Social Reel</option>
+                </select>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Contrast</span>
+                <input type="range" id="rngLumetriContrast" min="0.70" max="1.40" step="0.05" value="1.05" oninput="document.getElementById('lblLumetriContrast').innerText = this.value + 'x'" onchange="saveInspectorMeta()">
+                <span id="lblLumetriContrast" style="font-family:var(--font-mono); font-size:10px; width:34px;">1.05x</span>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Saturation</span>
+                <input type="range" id="rngLumetriSaturation" min="0.70" max="1.60" step="0.05" value="1.20" oninput="document.getElementById('lblLumetriSaturation').innerText = this.value + 'x'" onchange="saveInspectorMeta()">
+                <span id="lblLumetriSaturation" style="font-family:var(--font-mono); font-size:10px; width:34px;">1.20x</span>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Vignette Falloff (30%)</span>
+                <label class="switch-wrap">
+                  <input type="checkbox" id="chkVignette" class="toggle-checkbox" checked onchange="saveInspectorMeta()">
+                </label>
+              </div>
             </div>
-            <input type="text" id="ytMetaTitle" placeholder="Video Title (#shorts #viral)...">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-              <input type="text" id="ytMetaTags" placeholder="Tags (comma-separated)...">
-              <select id="ytMetaPrivacy">
-                <option value="public">Public</option>
-                <option value="unlisted">Unlisted</option>
-                <option value="private">Private</option>
+
+            <div class="inspector-group-card">
+              <div class="group-card-header">
+                <span>🏷️ Hook Banner & Title</span>
+              </div>
+              <input type="text" id="inspMetaTitle" placeholder="Video Hook Banner Title..." onchange="saveInspectorMeta()">
+              <div style="font-size:10px; color:var(--nle-text-dim);">Displays rounded red pill banner across first 4 seconds of video.</div>
+            </div>
+          </div>
+
+          <!-- TAB 3: ESSENTIAL SOUND -->
+          <div class="insp-tab-content" id="inspTabSound" style="display:none;">
+            <div class="inspector-group-card">
+              <div class="group-card-header">
+                <span>🎙️ Voiceover Engine</span>
+                <span style="font-size:9.5px; color:var(--audio-green);">audio_master.py</span>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Voice Mode</span>
+                <select id="selVoiceMode" onchange="saveInspectorMeta()" style="width:140px;">
+                  <option value="auto" selected>Auto: Uploaded / AI</option>
+                  <option value="upload">My Uploaded Voice</option>
+                  <option value="ai_hindi">AI Hindi Voice (TTS)</option>
+                </select>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Noise & Fan Removal</span>
+                <label class="switch-wrap"><input type="checkbox" id="chkNoiseRemoval" class="toggle-checkbox" checked onchange="saveInspectorMeta()"></label>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Radio Bass & Clarity EQ</span>
+                <label class="switch-wrap"><input type="checkbox" id="chkRadioEq" class="toggle-checkbox" checked onchange="saveInspectorMeta()"></label>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Auto BGM Ducking</span>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <label class="switch-wrap"><input type="checkbox" id="chkBgmDucking" class="toggle-checkbox" checked onchange="saveInspectorMeta()"></label>
+                  <input type="range" id="rngBgmDuckingDb" min="-30" max="-6" step="2" value="-18" oninput="document.getElementById('lblBgmDucking').innerText = this.value + ' dB'" onchange="saveInspectorMeta()" style="width:65px;">
+                  <span id="lblBgmDucking" style="font-family:var(--font-mono); font-size:10px; width:42px;">-18 dB</span>
+                </div>
+              </div>
+              <div class="control-row">
+                <span class="control-label">Whoosh SFX & Sub-Bass</span>
+                <label class="switch-wrap"><input type="checkbox" id="chkWhoosh" class="toggle-checkbox" checked onchange="saveInspectorMeta()"></label>
+              </div>
+            </div>
+
+            <div class="inspector-group-card">
+              <div class="group-card-header">
+                <span>📝 AI Hindi Voice Script (metadata.json)</span>
+                <span id="lblScriptStats" style="font-size:9.5px; color:var(--sub-amber);">0 words</span>
+              </div>
+              <textarea id="inspAiScript" placeholder="Write full Hindi/Hinglish speech script here..." oninput="updateScriptWords()" onchange="saveInspectorMeta()"></textarea>
+            </div>
+          </div>
+
+          <!-- TAB 4: EXPORT & PUBLISH -->
+          <div class="insp-tab-content" id="inspTabExport" style="display:none;">
+            <div class="inspector-group-card">
+              <div class="group-card-header">
+                <span>🎬 Export Quality Settings</span>
+              </div>
+              <select id="selExportQuality" onchange="saveInspectorMeta()">
+                <option value="auto" selected>Auto (4K if Raw is 4K, else 1080p)</option>
+                <option value="1080p">1080p Full HD (1080x1920 @ 14 Mbps)</option>
+                <option value="4k">4K Ultra HD (2160x3840 @ 35 Mbps)</option>
               </select>
             </div>
-            <textarea id="ytMetaDesc" style="min-height:48px;" placeholder="Video description & links..."></textarea>
-            
-            <button class="btn btn-danger" style="background:#cc0000; color:#fff;" onclick="publishToYouTube()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-              Upload Selected Video to YouTube
-            </button>
+
+            <div class="inspector-group-card">
+              <div class="group-card-header">
+                <span>⚡ 3 Studio Render Engines</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <button class="btn btn-primary" style="justify-content:flex-start; padding:8px 10px;" onclick="runEngine('auto_pilot')">
+                  <span>▶</span>
+                  <div style="text-align:left;">
+                    <div style="font-weight:700;">YT Shorts Auto-Pilot</div>
+                    <div style="font-size:9.5px; opacity:0.8;">Voiceover -> B-Roll -> Captions -> Grade</div>
+                  </div>
+                </button>
+                <button class="btn" style="justify-content:flex-start; padding:8px 10px; border-color:var(--bgm-purple); color:#c084fc;" onclick="runEngine('vlog_pro')">
+                  <span>✂️</span>
+                  <div style="text-align:left;">
+                    <div style="font-weight:700;">Edit My Self-Vlog</div>
+                    <div style="font-size:9.5px; opacity:0.8;">Silence jump-cuts -> Punch-zooms -> Glow</div>
+                  </div>
+                </button>
+                <button class="btn" style="justify-content:flex-start; padding:8px 10px; border-color:var(--record-red); color:#f87171;" onclick="runEngine('insta_reel')">
+                  <span>📱</span>
+                  <div style="text-align:left;">
+                    <div style="font-weight:700;">Edit Insta Reel</div>
+                    <div style="font-size:9.5px; opacity:0.8;">Reference cut rhythm -> Trending audio</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Direct Download & YouTube Upload -->
+            <div class="inspector-group-card">
+              <div class="group-card-header">
+                <span>📤 Share & Publish Output</span>
+              </div>
+              <a class="btn btn-green" id="btnDownloadExport" href="#" download style="padding:8px 10px; width:100%;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download MP4 (Instagram / TikTok)
+              </a>
+
+              <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+                <input type="text" id="ytPublishTitle" placeholder="YouTube Video Title (#shorts)...">
+                <input type="text" id="ytPublishTags" placeholder="Tags (comma-separated)...">
+                <select id="ytPublishPrivacy">
+                  <option value="public">Public</option>
+                  <option value="unlisted">Unlisted</option>
+                  <option value="private">Private</option>
+                </select>
+                <button class="btn btn-danger" onclick="triggerYouTubePublish()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                  Publish to YouTube
+                </button>
+              </div>
+            </div>
+
           </div>
 
         </div>
-
-      </div>
+      </section>
 
     </div>
 
-  </main>
+    <!-- ================= PANE 4: MULTI-TRACK TIMELINE & RENDER CONSOLE (BOTTOM) ================= -->
+    <section class="nle-bottom-pane" id="paneBottomNle">
+      <div class="pane-header-bar">
+        <div style="display:flex; align-items:center; gap:4px;">
+          <button class="pane-tab-item active" id="tabBtnTimeline" onclick="switchBottomTab('timeline')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            <span>Timeline</span>
+          </button>
+          <button class="pane-tab-item" id="tabBtnConsole" onclick="switchBottomTab('console')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            <span>Render Console (Live Logs)</span>
+            <span class="live-dot" id="consoleLiveDot" style="display:none;"></span>
+          </button>
+        </div>
 
-  <!-- Floating Studio AI Assistant & Video Feedback FAB -->
-  <button class="chat-fab-btn" id="btnOpenChat" onclick="toggleChat()" title="Report video issue or ask AI assistant">
-    <span class="chat-fab-icon">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    </span>
-    <span class="chat-fab-text">Video Issue / Chat</span>
-    <span class="chat-fab-badge" id="chatFabBadge">AI</span>
-  </button>
-
-  <!-- Interactive Chat & Feedback Drawer/Modal -->
-  <div class="chat-widget-box" id="studioChatWidget">
-    <div class="chat-header">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <div class="chat-avatar">🎬</div>
-        <div>
-          <div style="font-weight:700; color:#fff; font-size:13px; display:flex; align-items:center; gap:6px;">
-            <span>Studio Assistant & Feedback</span>
-            <span style="font-size:9.5px; background:rgba(56,189,248,0.15); color:var(--cyan); border:1px solid rgba(56,189,248,0.3); padding:1px 5px; border-radius:6px;">LIVE</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:6px; margin-right:6px;" title="Timeline Zoom">
+            <span style="font-size:10px; color:var(--nle-text-dim);">Zoom</span>
+            <input type="range" id="timelineZoomSlider" min="12" max="60" value="24" step="2" oninput="handleTimelineZoom(this.value)" style="width:70px; accent-color:var(--premiere-blue); cursor:pointer;">
+            <span id="lblTimelineZoom" style="font-family:var(--font-mono); font-size:10px; color:var(--nle-text-dim); width:28px;">1.0x</span>
           </div>
-          <div style="font-size:10.5px; color:var(--text-sub);" id="chatActiveVidLabel">Linked Video: final_video.mp4</div>
+          <span id="queueNoticeText" style="font-size:10.5px; color:var(--nle-text-dim);">Queue: Idle</span>
+          <button class="btn btn-sm btn-danger" id="btnCancelRun" style="display:none;" onclick="cancelRunningJob()">⏹ Cancel</button>
+          <button class="btn btn-sm" onclick="clearConsoleLogs()">Clear Logs</button>
         </div>
       </div>
-      <button class="btn btn-default" style="padding:2px 8px; font-size:12px; border-radius:50%; width:26px; height:26px;" onclick="toggleChat(false)">✕</button>
-    </div>
 
-    <!-- Quick Issue Filter Chips -->
-    <div class="chat-quick-chips">
-      <button class="chip-btn" onclick="sendQuickChip('Caption timing is slightly off with speech')">✍️ Captions timing</button>
-      <button class="chip-btn" onclick="sendQuickChip('Audio or background music volume is too high')">🔊 BGM volume</button>
-      <button class="chip-btn" onclick="sendQuickChip('How to export in full 4K 2160x3840?')">📺 4K Export</button>
-      <button class="chip-btn" onclick="sendQuickChip('Silence jump cuts feel too sudden')">✂️ Jump cuts</button>
-      <button class="chip-btn" onclick="sendQuickChip('Video render is slow or stuck')">⏳ Slow render</button>
-    </div>
+      <!-- Mode A: Visual Multi-Track Timeline -->
+      <div class="timeline-viewport-container" id="timelineViewportContainer">
+        <!-- Track Headers on Left -->
+        <div class="timeline-track-headers-col">
+          <div class="track-header-spacer">TRACKS</div>
+          <div class="track-header-cell">
+            <span>V2</span>
+            <span class="th-tag" style="background:rgba(245, 158, 11, 0.2); color:var(--sub-amber);">Captions</span>
+          </div>
+          <div class="track-header-cell">
+            <span>V1</span>
+            <span class="th-tag" style="background:rgba(56, 189, 248, 0.2); color:var(--premiere-blue);">Video</span>
+          </div>
+          <div class="track-header-cell">
+            <span>A1</span>
+            <span class="th-tag" style="background:rgba(16, 185, 129, 0.2); color:var(--audio-green);">Voice</span>
+          </div>
+          <div class="track-header-cell">
+            <span>A2</span>
+            <span class="th-tag" style="background:rgba(168, 85, 247, 0.2); color:var(--bgm-purple);">BGM</span>
+          </div>
+        </div>
 
-    <!-- Messages Body -->
-    <div class="chat-messages-body" id="chatMessagesBody">
-      <div class="chat-bubble bot">
-        <div style="font-weight:700; font-size:11px; color:var(--cyan); margin-bottom:3px;">🤖 Studio AI Assistant</div>
-        <div>Namaste! 🙏 Agar video me captions, audio, visual effects ya rendering me koi bhi issue hai, toh yahan message bhejein. Hum turant issue log kar lenge aur tips denge!</div>
-        <div style="font-size:9.5px; color:var(--text-dim); margin-top:4px; text-align:right;">Online</div>
+        <!-- Tracks Body with Playhead Scrubber -->
+        <div class="timeline-tracks-scroll-area" id="timelineTracksScrollArea" onclick="handleTimelineClick(event)">
+          <!-- Ruler Bar -->
+          <div class="timeline-ruler-bar" id="timelineRulerBar">
+            <span class="ruler-tick" style="left:0px;">00:00</span>
+            <span class="ruler-tick" style="left:120px;">00:05</span>
+            <span class="ruler-tick" style="left:240px;">00:10</span>
+            <span class="ruler-tick" style="left:360px;">00:15</span>
+            <span class="ruler-tick" style="left:480px;">00:20</span>
+            <span class="ruler-tick" style="left:600px;">00:30</span>
+            <span class="ruler-tick" style="left:720px;">00:45</span>
+            <span class="ruler-tick" style="left:840px;">01:00</span>
+          </div>
+
+          <!-- Track V2: Captions & Hook -->
+          <div class="track-lane-row" id="laneV2">
+            <!-- Dynamic blocks injected -->
+          </div>
+
+          <!-- Track V1: Video Clips -->
+          <div class="track-lane-row" id="laneV1">
+            <!-- Dynamic blocks injected -->
+          </div>
+
+          <!-- Track A1: Master Voice -->
+          <div class="track-lane-row" id="laneA1">
+            <!-- Dynamic blocks injected -->
+          </div>
+
+          <!-- Track A2: Ducked BGM -->
+          <div class="track-lane-row" id="laneA2">
+            <!-- Dynamic blocks injected -->
+          </div>
+
+          <!-- Red Playhead Needle -->
+          <div class="timeline-playhead-needle" id="timelinePlayheadNeedle" style="left: 0px;">
+            <div class="needle-head"></div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- Chat Input Form -->
-    <form class="chat-input-bar" onsubmit="event.preventDefault(); submitChatMessage();">
-      <input type="text" id="chatInputText" placeholder="Video me kya galat hai? Yahan likhein..." autocomplete="off">
-      <button type="submit" class="btn btn-cyan" id="btnSendChat" style="padding:8px 14px; flex-shrink:0;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      </button>
-    </form>
+      <!-- Mode B: Live Render Console View -->
+      <div class="render-console-view" id="renderConsoleView">
+        <div class="console-stream-body" id="consoleStreamBody">
+          <div class="term-line info">[STUDIO NLE] Live FFmpeg & Automation Engine connected.</div>
+        </div>
+      </div>
+    </section>
+
   </div>
 
-  <!-- Bottom Live CMD Log Drawer -->
-  <aside class="cmd-drawer collapsed" id="cmdDrawer">
-    <div class="drawer-bar" onclick="toggleDrawer()">
-      <div class="drawer-info">
-        <span class="dot" id="drawerDot"></span>
-        <strong id="drawerStatusText">Engine Idle</strong>
-        <span class="drawer-line" id="drawerSnippet">[CMD] Live terminal logs stream here.</span>
-      </div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <button class="btn btn-default" style="padding:2px 8px; font-size:10px;" onclick="event.stopPropagation(); clearLogs();">Clear</button>
-        <button class="btn btn-default" style="padding:2px 8px; font-size:10px;" onclick="event.stopPropagation(); copyLogs();">Copy</button>
-        <span style="font-size:11px; color:var(--text-sub);" id="drawerToggleIcon">▲ Show Live Console</span>
+</div>
+
+<!-- Floating Interactive Studio Chat & Feedback Widget -->
+<button class="chat-fab-btn" id="btnOpenChat" onclick="toggleChat()" title="Report video issue or ask AI assistant">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  <span>Studio AI Chat</span>
+</button>
+
+<div class="chat-widget-box" id="studioChatWidget">
+  <div class="chat-header">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-size:16px;">🎬</span>
+      <div>
+        <div style="font-weight:700; color:#fff; font-size:12px;">Studio Assistant & Feedback</div>
+        <div style="font-size:10px; color:var(--nle-text-sub);" id="chatActiveVidLabel">Active: final_video.mp4</div>
       </div>
     </div>
-    <div class="drawer-body" id="drawerBody"></div>
-  </aside>
+    <button class="btn btn-sm" onclick="toggleChat(false)">✕</button>
+  </div>
 
-  <!-- System Tools Check Modal -->
-  <div class="modal-backdrop" id="setupModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3 style="font-size:16px; color:#fff; display:flex; align-items:center; gap:8px;">
-          🛠️ System & CMD Tools Check
-        </h3>
-        <button class="btn btn-default" style="padding:4px 8px;" onclick="closeSetupModal()">✕</button>
-      </div>
-      <p style="font-size:12px; color:var(--text-sub); margin-bottom:16px;">
-        Verifies FFmpeg CLI, Python libraries, and environment readiness for cloud rendering.
-      </p>
-      <div id="pkgStatusContainer">
-        <p style="text-align:center; color:var(--text-dim); padding:20px;">Analyzing environment and packages...</p>
-      </div>
-      <div style="margin-top:16px; text-align:right;">
-        <button class="btn btn-default" onclick="closeSetupModal()">Close</button>
-        <button class="btn btn-cyan" onclick="runSetupCheck()">Re-check All</button>
-      </div>
+  <div class="chat-quick-chips">
+    <button class="chip-btn" onclick="sendQuickChip('Caption timing is slightly off with speech')">✍️ Captions timing</button>
+    <button class="chip-btn" onclick="sendQuickChip('Audio or BGM volume is too high')">🔊 BGM volume</button>
+    <button class="chip-btn" onclick="sendQuickChip('How to export in full 4K 2160x3840?')">📺 4K Export</button>
+    <button class="chip-btn" onclick="sendQuickChip('Silence jump cuts feel too sudden')">✂️ Jump cuts</button>
+    <button class="chip-btn" onclick="sendQuickChip('Render is slow or queued')">⏳ Render queue</button>
+  </div>
+
+  <div class="chat-messages-body" id="chatMessagesBody">
+    <div class="chat-bubble bot">
+      <div style="font-weight:700; font-size:10.5px; color:var(--premiere-blue); margin-bottom:2px;">🤖 Studio Assistant</div>
+      <div>Namaste! 🙏 Welcome to Premiere Pro NLE Studio. Report any video glitches or ask editing questions here!</div>
     </div>
   </div>
 
-  <!-- Toast Notification -->
-  <div class="toast-pill" id="toastPill">Action completed</div>
+  <form class="chat-input-bar" onsubmit="event.preventDefault(); submitChatMessage();">
+    <input type="text" id="chatInputText" placeholder="Report issue or ask questions..." autocomplete="off">
+    <button type="submit" class="btn btn-primary" style="padding:4px 10px;">Send</button>
+  </form>
+</div>
 
-  <!-- JavaScript Client Core -->
-  <script>
-    // --- 1. Multi-User Session Resolver ---
-    function getOrCreateSessionId() {
-      let sid = localStorage.getItem("vstudio_session_id");
-      if (!sid || sid.length < 6) {
-        sid = "sess_" + Math.random().toString(36).substring(2, 10) + Date.now().toString(36).substring(4);
-        localStorage.setItem("vstudio_session_id", sid);
-      }
-      return sid;
+<!-- Toast Pill -->
+<div class="toast-pill" id="toastPill">Action completed</div>
+
+<!-- ================= JAVASCRIPT NLE CONTROLLER ================= -->
+<script>
+  // --- 1. Session Isolation ---
+  function getOrCreateSessionId() {
+    let sid = localStorage.getItem("vstudio_session_id");
+    if (!sid || sid.length < 6) {
+      sid = "sess_" + Math.random().toString(36).substring(2, 10) + Date.now().toString(36).substring(4);
+      localStorage.setItem("vstudio_session_id", sid);
     }
+    return sid;
+  }
+  const CURRENT_SESSION = getOrCreateSessionId();
+  document.getElementById("sessionTagDisplay").innerText = "#" + CURRENT_SESSION.substring(5, 12);
 
-    const CURRENT_SESSION = getOrCreateSessionId();
-    document.getElementById("sessionDisplayTag").innerText = "#" + CURRENT_SESSION.substring(5, 13);
-
-    function resetNewSession() {
-      if (confirm("Start a clean new workspace? Your current workspace will stay preserved.")) {
-        localStorage.removeItem("vstudio_session_id");
-        window.location.reload();
-      }
+  function resetStudioSession() {
+    if (confirm("Start a clean new NLE workspace? Current session remains preserved.")) {
+      localStorage.removeItem("vstudio_session_id");
+      window.location.reload();
     }
+  }
 
-    // Wrap fetch to automatically attach X-Session-ID header
-    async function apiFetch(url, options = {}) {
-      const opts = Object.assign({}, options);
-      opts.headers = Object.assign({}, opts.headers, {
-        "X-Session-ID": CURRENT_SESSION
-      });
-      return fetch(url, opts);
-    }
-
-    let activeVideo = "final_video.mp4";
-    let sseSource = null;
-
-    // Toast helper
-    function showToast(msg) {
-      const t = document.getElementById("toastPill");
-      t.innerText = msg;
-      t.classList.add("show");
-      setTimeout(() => t.classList.remove("show"), 2800);
-    }
-
-    // Modal helpers
-    function openSetupModal() {
-      document.getElementById("setupModal").style.display = "flex";
-      runSetupCheck();
-    }
-    function closeSetupModal() {
-      document.getElementById("setupModal").style.display = "none";
-    }
-
-    // Folder Switcher
-    function switchFolder(folderId) {
-      ["raw", "ref", "audio"].forEach(f => {
-        const tile = document.getElementById(`tile${capitalize(f)}`);
-        const pane = document.getElementById(`pane${capitalize(f)}`);
-        if (f === folderId) {
-          tile.classList.add("active");
-          pane.style.display = "block";
-        } else {
-          tile.classList.remove("active");
-          pane.style.display = "none";
-        }
-      });
-    }
-
-    function capitalize(s) {
-      return s.charAt(0).toUpperCase() + s.slice(1);
-    }
-
-    function toggleDetails(id) {
-      const el = document.getElementById(id);
-      const toggle = document.getElementById(id + "Toggle");
-      if (el.style.display === "none" || !el.style.display) {
-        el.style.display = "block";
-        if (toggle) toggle.innerText = "Hide Details ▴";
-      } else {
-        el.style.display = "none";
-        if (toggle) toggle.innerText = "Show Details ▾";
-      }
-    }
-
-    function updateQualityBadgeHint() {
-      const sel = document.getElementById("exportQualitySelect").value;
-      const hint = document.getElementById("qualityBadgeHint");
-      if (sel === "4k") {
-        hint.innerText = "Forced 4K Ultra HD (2160x3840 @ 35 Mbps)";
-        hint.style.color = "var(--pink)";
-      } else if (sel === "1080p") {
-        hint.innerText = "1080p Full HD (1080x1920 @ 14 Mbps)";
-        hint.style.color = "var(--purple)";
-      } else {
-        hint.innerText = "Auto 4K Sensing (2160p if raw clips >= 4K, else 1080p)";
-        hint.style.color = "var(--cyan)";
-      }
-    }
-
-    // Terminal Drawer Toggle
-    function toggleDrawer(expand) {
-      const drawer = document.getElementById("cmdDrawer");
-      const icon = document.getElementById("drawerToggleIcon");
-      if (expand === true) {
-        drawer.classList.remove("collapsed");
-        drawer.classList.add("expanded");
-        icon.innerText = "▼ Hide Console";
-      } else if (expand === false) {
-        drawer.classList.remove("expanded");
-        drawer.classList.add("collapsed");
-        icon.innerText = "▲ Show Live Console";
-      } else {
-        drawer.classList.toggle("collapsed");
-        drawer.classList.toggle("expanded");
-        icon.innerText = drawer.classList.contains("expanded") ? "▼ Hide Console" : "▲ Show Live Console";
-      }
-    }
-
-    // Upload files
-    async function uploadFiles(files, category) {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const fd = new FormData();
-        fd.append("file", file);
-        showToast(`Uploading ${file.name}...`);
-        try {
-          const res = await apiFetch(`/api/upload/${category}`, { method: "POST", body: fd });
-          const data = await res.json();
-          if (res.ok) {
-            showToast(`Uploaded ${data.filename}`);
-          } else {
-            showToast(`Upload error: ${data.error || 'Server error'}`);
-          }
-        } catch (err) {
-          showToast(`Upload error: ${err.message}`);
-        }
-      }
-      refreshWorkspace();
-    }
-
-    async function refreshWorkspace() {
-      loadFiles();
-      loadLinks();
-      loadMetadata();
-      loadExports();
-    }
-
-    async function loadFiles() {
-      try {
-        const res = await apiFetch("/api/files");
-        const data = await res.json();
-
-        // Raw
-        renderFileList("rawFileList", data.raw_video || [], "raw");
-        const rawCount = `${(data.raw_video || []).length} clips`;
-        document.getElementById("badgeRaw").innerText = rawCount;
-        document.getElementById("paneRawBadge").innerText = rawCount;
-
-        // Ref
-        renderFileList("refFileList", data.references || [], "references");
-        const refCount = `${(data.references || []).length} files`;
-        document.getElementById("badgeRef").innerText = refCount;
-        document.getElementById("paneRefBadge").innerText = refCount;
-
-        // Audio
-        renderFileList("audioFileList", data.audio || [], "audio");
-        const audioCount = `${(data.audio || []).length} files`;
-        document.getElementById("badgeAudio").innerText = audioCount;
-        document.getElementById("paneAudioBadge").innerText = audioCount;
-
-      } catch (err) {
-        console.error("Failed to load files", err);
-      }
-    }
-
-    function renderFileList(containerId, list, folderKey) {
-      const el = document.getElementById(containerId);
-      el.innerHTML = "";
-      if (!list || list.length === 0) {
-        el.innerHTML = `<div class="empty-state">No files in folder. Drop files above.</div>`;
-        return;
-      }
-      list.forEach(f => {
-        const row = document.createElement("div");
-        row.className = "file-item-row";
-        row.innerHTML = `
-          <div class="file-left" title="${f.name}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-            <span>${f.name}</span>
-          </div>
-          <div class="file-right">
-            <span class="file-size-tag">${f.size_mb} MB</span>
-            <button class="btn-del" title="Delete file" onclick="deleteFile('${folderKey}', '${f.name}')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
-            </button>
-          </div>
-        `;
-        el.appendChild(row);
-      });
-    }
-
-    async function deleteFile(folderKey, filename) {
-      if (!confirm(`Delete "${filename}" from ${folderKey}?`)) return;
-      try {
-        const res = await apiFetch(`/api/files/${folderKey}/${filename}`, { method: "DELETE" });
-        if (res.ok) {
-          showToast(`Deleted ${filename}`);
-          refreshWorkspace();
-        } else {
-          showToast(`Could not delete file`);
-        }
-      } catch (err) {
-        showToast(`Error: ${err.message}`);
-      }
-    }
-
-    async function loadLinks() {
-      try {
-        const res = await apiFetch("/api/links");
-        const data = await res.json();
-        document.getElementById("rawYtLinks").value = data.yt_links || "";
-        document.getElementById("refStyleLink").value = data.ref_link || "";
-        document.getElementById("instaAudioLink").value = data.insta_link || "";
-      } catch (err) {
-        console.error("Failed to load links", err);
-      }
-    }
-
-    async function saveRawLinks() {
-      const val = document.getElementById("rawYtLinks").value;
-      await saveLinkPayload({ yt_links: val });
-    }
-    async function saveRefLinks() {
-      const val = document.getElementById("refStyleLink").value;
-      await saveLinkPayload({ ref_link: val });
-    }
-    async function saveInstaAudioLink() {
-      const val = document.getElementById("instaAudioLink").value;
-      await saveLinkPayload({ insta_link: val });
-    }
-
-    async function saveLinkPayload(payload) {
-      try {
-        const res = await apiFetch("/api/links", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (res.ok) showToast("Link saved successfully!");
-        else showToast("Failed to save link.");
-      } catch (err) {
-        showToast(`Error: ${err.message}`);
-      }
-    }
-
-    async function clearLinkType(type) {
-      if (!confirm(`Clear link in this section?`)) return;
-      try {
-        const res = await apiFetch("/api/links/clear", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type })
-        });
-        if (res.ok) {
-          if (type === "yt") document.getElementById("rawYtLinks").value = "";
-          if (type === "ref") document.getElementById("refStyleLink").value = "";
-          if (type === "insta") document.getElementById("instaAudioLink").value = "";
-          showToast("Links cleared.");
-        }
-      } catch (err) {
-        showToast(`Error: ${err.message}`);
-      }
-    }
-
-    async function loadMetadata() {
-      try {
-        const res = await apiFetch("/api/metadata");
-        const data = await res.json();
-        document.getElementById("aiScriptText").value = data.script || "";
-        updateScriptStats();
-
-        document.getElementById("ytMetaTitle").value = data.title || "";
-        document.getElementById("ytMetaTags").value = (data.tags || []).join(", ");
-        document.getElementById("ytMetaPrivacy").value = data.privacyStatus || "public";
-        document.getElementById("ytMetaDesc").value = data.description || "";
-      } catch (err) {
-        console.error("Failed to load metadata", err);
-      }
-    }
-
-    function updateScriptStats() {
-      const s = document.getElementById("aiScriptText").value.trim();
-      const words = s ? s.split(/\s+/).length : 0;
-      const sec = Math.round(words / 2.6);
-      document.getElementById("scriptStats").innerText = `${words} words (~${sec}s speech)`;
-    }
-    document.getElementById("aiScriptText").addEventListener("input", updateScriptStats);
-
-    async function saveAiScript() {
-      const script = document.getElementById("aiScriptText").value;
-      try {
-        const res = await apiFetch("/api/metadata", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ script })
-        });
-        if (res.ok) showToast("Script saved to metadata.json!");
-        else showToast("Could not save script.");
-      } catch (err) {
-        showToast(`Error: ${err.message}`);
-      }
-    }
-
-    async function launchEngine(engineKey) {
-      toggleDrawer(true);
-      const qualityEl = document.getElementById("exportQualitySelect");
-      const quality = qualityEl ? qualityEl.value : "auto";
-      try {
-        const res = await apiFetch(`/api/execute/${engineKey}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ quality: quality })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(`Queued: ${data.engine} [${quality.toUpperCase()}]`);
-        } else {
-          showToast(`Engine warning: ${data.error}`);
-        }
-      } catch (err) {
-        showToast(`Execution error: ${err.message}`);
-      }
-    }
-
-    async function stopEngine() {
-      if (!confirm("Terminate current automation process?")) return;
-      try {
-        const res = await apiFetch("/api/stop", { method: "POST" });
-        const data = await res.json();
-        showToast(data.message);
-      } catch (err) {
-        showToast(`Error: ${err.message}`);
-      }
-    }
-
-    async function loadExports() {
-      try {
-        const res = await apiFetch("/api/exports");
-        const data = await res.json();
-        const container = document.getElementById("exportChipsList");
-        container.innerHTML = "";
-
-        const list = data.exports || [];
-        if (list.length === 0) {
-          container.innerHTML = `<span style="font-size:11px; color:var(--text-dim);">No rendered videos in Export/</span>`;
-          return;
-        }
-
-        let firstAvailable = null;
-        list.forEach(item => {
-          const chip = document.createElement("div");
-          const isAct = item.name === activeVideo;
-          chip.className = `export-chip ${isAct ? 'active' : ''}`;
-          chip.innerHTML = `
-            <span>${item.name}</span>
-            <span style="font-size:10px; color:${item.exists ? 'var(--green)' : 'var(--text-dim)'}; font-family:var(--font-mono);">
-              ${item.exists ? item.size_mb + ' MB' : 'Not built'}
-            </span>
-          `;
-
-          if (item.exists) {
-            chip.onclick = () => selectVideo(item.name, item.size_mb, item.mtime);
-            if (!firstAvailable) firstAvailable = item;
-          } else {
-            chip.style.opacity = "0.5";
-            chip.style.cursor = "default";
-          }
-          container.appendChild(chip);
-        });
-
-        if (firstAvailable && (!activeVideo || !list.find(x => x.name === activeVideo && x.exists))) {
-          selectVideo(firstAvailable.name, firstAvailable.size_mb, firstAvailable.mtime);
-        }
-      } catch (err) {
-        console.error("Failed to load exports", err);
-      }
-    }
-
-    function selectVideo(name, sizeMb, mtime) {
-      activeVideo = name;
-      const player = document.getElementById("mainVideoPlayer");
-      player.src = `/api/video/${name}?session_id=${CURRENT_SESSION}`;
-
-      document.getElementById("selectedVideoLabel").innerText = name;
-
-      const downloadBtn = document.getElementById("btnDirectDownload");
-      downloadBtn.href = `/api/download/${name}?session_id=${CURRENT_SESSION}`;
-      downloadBtn.download = name;
-
-      document.querySelectorAll(".export-chip").forEach(p => {
-        if (p.innerText.includes(name)) p.classList.add("active");
-        else p.classList.remove("active");
-      });
-    }
-
-    async function publishToYouTube() {
-      if (!confirm(`Upload "${activeVideo}" to YouTube?`)) return;
-      toggleDrawer(true);
-
-      const tagsRaw = document.getElementById("ytMetaTags").value;
-      const tags = tagsRaw.split(",").map(t => t.trim()).filter(Boolean);
-
-      const payload = {
-        video: activeVideo,
-        title: document.getElementById("ytMetaTitle").value,
-        description: document.getElementById("ytMetaDesc").value,
-        tags: tags,
-        privacyStatus: document.getElementById("ytMetaPrivacy").value
-      };
-
-      try {
-        const res = await apiFetch("/api/execute/upload_youtube", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(`Uploading ${activeVideo} to YouTube...`);
-        } else {
-          showToast(`Upload error: ${data.error}`);
-        }
-      } catch (err) {
-        showToast(`Error: ${err.message}`);
-      }
-    }
-
-    // --- SSE Real-time Logs & Queue Stream per Session ---
-    function initSSE() {
-      if (sseSource) sseSource.close();
-      sseSource = new EventSource(`/api/stream-logs?session_id=${CURRENT_SESSION}`);
-
-      sseSource.onmessage = function(event) {
-        try {
-          const data = JSON.parse(event.data);
-          handleLogEvent(data);
-        } catch (e) {}
-      };
-
-      sseSource.onerror = function() {
-        setTimeout(initSSE, 3000);
-      };
-    }
-
-    function handleLogEvent(data) {
-      const headerDot = document.getElementById("headerDot");
-      const headerText = document.getElementById("headerStatusText");
-      const drawerDot = document.getElementById("drawerDot");
-      const drawerText = document.getElementById("drawerStatusText");
-      const snippet = document.getElementById("drawerSnippet");
-      const stopBtn = document.getElementById("btnStopRun");
-      const queueBanner = document.getElementById("queueStatusBanner");
-      const queueText = document.getElementById("queueStatusText");
-      const queueTime = document.getElementById("queueTimeText");
-
-      if (data.type === "queued") {
-        headerDot.className = "dot busy";
-        headerText.innerText = `Queued: ${data.engine} (#${data.position})`;
-        drawerDot.className = "dot busy";
-        drawerText.innerText = `Queued: #${data.position}`;
-        stopBtn.style.display = "inline-flex";
-        queueBanner.className = "queue-status-banner running";
-        queueText.innerText = `⏳ Engine Queued: ${data.engine} (Position #${data.position} in render pool)`;
-        queueTime.innerText = "In Queue";
-        snippet.innerText = data.message;
-        appendLog(data.message, "warning", data.timestamp);
-      } else if (data.type === "start") {
-        headerDot.className = "dot busy";
-        headerText.innerText = `Running: ${data.engine}`;
-        drawerDot.className = "dot busy";
-        drawerText.innerText = `Running: ${data.engine}`;
-        stopBtn.style.display = "inline-flex";
-        queueBanner.className = "queue-status-banner running";
-        queueText.innerText = `🚀 Active Rendering: ${data.engine} — Cloud worker active`;
-        queueTime.innerText = "Processing...";
-        snippet.innerText = data.message;
-        appendLog(data.message, "info", data.timestamp);
-      } else if (data.type === "log") {
-        let cls = "log";
-        const l = data.line.toLowerCase();
-        if (l.includes("error") || l.includes("fail")) cls = "error";
-        else if (l.includes("done") || l.includes("ready") || l.includes("uploaded")) cls = "success";
-        else if (l.includes("warn")) cls = "warning";
-        else if (l.includes("[1/4]") || l.includes("[2/4]") || l.includes("[3/4]") || l.includes("[4/4]") || l.includes("downloading")) cls = "info";
-
-        snippet.innerText = data.line;
-        appendLog(data.line, cls, data.timestamp);
-      } else if (data.type === "end") {
-        headerDot.className = "dot";
-        headerText.innerText = "🟢 Cloud Ready • Live";
-        drawerDot.className = "dot";
-        drawerText.innerText = "Engine Idle";
-        stopBtn.style.display = "none";
-        queueBanner.className = "queue-status-banner";
-        queueText.innerText = `⚡ Render Engine Ready • Pool: 3 concurrent slots`;
-        queueTime.innerText = "Idle";
-        snippet.innerText = data.message;
-        appendLog(data.message, data.code === 0 ? "success" : "error", data.timestamp);
-        loadExports();
-        loadFiles();
-      } else if (data.type === "status") {
-        if (data.is_running) {
-          headerDot.className = "dot busy";
-          headerText.innerText = `Running: ${data.current_engine}`;
-          drawerDot.className = "dot busy";
-          drawerText.innerText = `Running: ${data.current_engine}`;
-          stopBtn.style.display = "inline-flex";
-          queueBanner.className = "queue-status-banner running";
-          queueText.innerText = `🚀 Active: ${data.current_engine}`;
-        } else {
-          headerDot.className = "dot";
-          headerText.innerText = "🟢 Cloud Ready • Live";
-          drawerDot.className = "dot";
-          drawerText.innerText = "Engine Idle";
-          stopBtn.style.display = "none";
-          queueBanner.className = "queue-status-banner";
-          queueText.innerText = `⚡ Render Engine Ready • Cloud pool: 3 concurrent slots`;
-        }
-      }
-    }
-
-    function appendLog(text, cls, time) {
-      const b = document.getElementById("drawerBody");
-      const line = document.createElement("div");
-      line.className = `term-msg ${cls}`;
-      line.innerHTML = `<span class="term-time">[${time || new Date().toLocaleTimeString()}]</span>${escapeHtml(text)}`;
-      b.appendChild(line);
-      b.scrollTop = b.scrollHeight;
-    }
-
-    function escapeHtml(str) {
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    function clearLogs() {
-      document.getElementById("drawerBody").innerHTML = "";
-    }
-    function copyLogs() {
-      const t = document.getElementById("drawerBody").innerText;
-      navigator.clipboard.writeText(t);
-      showToast("Logs copied to clipboard!");
-    }
-
-    async function runSetupCheck() {
-      const c = document.getElementById("pkgStatusContainer");
-      c.innerHTML = `<p style="text-align:center; color:var(--text-dim); padding:20px;">Analyzing environment and packages...</p>`;
-      try {
-        const res = await apiFetch("/api/setup");
-        const data = await res.json();
-        c.innerHTML = "";
-
-        const ff = data.ffmpeg;
-        const ffRow = document.createElement("div");
-        ffRow.className = "pkg-entry";
-        ffRow.innerHTML = `
-          <div><strong>FFmpeg CLI</strong><div style="font-size:10px; color:var(--text-dim); font-family:var(--font-mono);">${ff.path}</div></div>
-          <span style="font-weight:700; color:${ff.installed ? 'var(--green)' : 'var(--red)'};">${ff.installed ? '✅ Detected' : '❌ Not in PATH'}</span>
-        `;
-        c.appendChild(ffRow);
-
-        for (const [name, info] of Object.entries(data.packages)) {
-          const row = document.createElement("div");
-          row.className = "pkg-entry";
-          row.innerHTML = `
-            <div><strong>${name}</strong><div style="font-size:10px; color:var(--text-dim); font-family:var(--font-mono);">${info.installed ? 'v' + info.version : 'Missing'}</div></div>
-            <div>${info.installed ? '<span style="color:var(--green); font-weight:700;">✅ Installed</span>' : `<button class="btn btn-cyan" style="padding:2px 8px; font-size:10px;" onclick="installPkg('${name}')">Install</button>`}</div>
-          `;
-          c.appendChild(row);
-        }
-      } catch (err) {
-        c.innerHTML = `<p style="color:var(--red);">Error checking environment: ${err.message}</p>`;
-      }
-    }
-
-    async function installPkg(pkg) {
-      showToast(`Installing ${pkg}...`);
-      try {
-        const res = await apiFetch("/api/setup/install", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ package: pkg })
-        });
-        const data = await res.json();
-        if (res.ok && data.status === "success") {
-          showToast(`Installed ${pkg}!`);
-          runSetupCheck();
-        } else {
-          showToast(`Install failed: ${data.output || data.error}`);
-        }
-      } catch (err) {
-        showToast(`Error: ${err.message}`);
-      }
-    }
-
-    // --- Interactive Chat & Video Feedback ---
-    function toggleChat(forceOpen) {
-      const widget = document.getElementById("studioChatWidget");
-      const active = widget.classList.contains("open");
-      const shouldOpen = forceOpen !== undefined ? forceOpen : !active;
-      if (shouldOpen) {
-        widget.classList.add("open");
-        const activeVid = activeVideo || "final_video.mp4";
-        document.getElementById("chatActiveVidLabel").innerText = `Linked Video: ${activeVid}`;
-        loadChatHistory();
-        setTimeout(() => {
-          const inp = document.getElementById("chatInputText");
-          if (inp) inp.focus();
-        }, 120);
-      } else {
-        widget.classList.remove("open");
-      }
-    }
-
-    async function loadChatHistory() {
-      try {
-        const res = await apiFetch("/api/chat/messages");
-        const data = await res.json();
-        const list = data.messages || [];
-        if (list.length > 0) {
-          const body = document.getElementById("chatMessagesBody");
-          const firstBotWelcome = body.querySelector(".chat-bubble.bot");
-          body.innerHTML = firstBotWelcome ? firstBotWelcome.outerHTML : '';
-          list.forEach(m => {
-            appendChatBubble(m.user_message, "user", m.timestamp, m.video);
-            if (m.assistant_reply) {
-              appendChatBubble(m.assistant_reply, "bot", m.timestamp);
-            }
-          });
-          body.scrollTop = body.scrollHeight;
-        }
-      } catch (err) {
-        console.error("Could not load chat history", err);
-      }
-    }
-
-    async function submitChatMessage(customText) {
-      const input = document.getElementById("chatInputText");
-      const text = customText || (input ? input.value.trim() : "");
-      if (!text) return;
-      if (!customText && input) input.value = "";
-
-      const now = new Date().toLocaleTimeString();
-      const currentVid = activeVideo || "final_video.mp4";
-      appendChatBubble(text, "user", now, currentVid);
-
-      try {
-        const res = await apiFetch("/api/chat/message", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            message: text,
-            video: currentVid,
-            category: "video_feedback"
-          })
-        });
-        const data = await res.json();
-        if (res.ok && data.entry) {
-          appendChatBubble(data.entry.assistant_reply, "bot", new Date().toLocaleTimeString());
-          showToast("Feedback sent to Studio team!");
-        } else {
-          appendChatBubble("⚠️ Could not log message: " + (data.error || "Server error"), "bot", now);
-        }
-      } catch (err) {
-        appendChatBubble("⚠️ Connection error: " + err.message, "bot", now);
-      }
-    }
-
-    function sendQuickChip(text) {
-      submitChatMessage(text);
-    }
-
-    function appendChatBubble(text, type, time, vidTag) {
-      const body = document.getElementById("chatMessagesBody");
-      const bubble = document.createElement("div");
-      bubble.className = `chat-bubble ${type}`;
-      let headerHtml = "";
-      if (type === "bot") {
-        headerHtml = `<div style="font-weight:700; font-size:11px; color:var(--cyan); margin-bottom:3px;">🤖 Studio AI Assistant</div>`;
-      } else {
-        const vidBadge = vidTag ? `<span style="font-size:9px; background:rgba(255,255,255,0.22); padding:1px 6px; border-radius:4px; margin-left:6px;">📹 ${escapeHtml(vidTag)}</span>` : '';
-        headerHtml = `<div style="font-weight:700; font-size:10.5px; opacity:0.9; margin-bottom:2px; display:flex; align-items:center; justify-content:flex-end;">You ${vidBadge}</div>`;
-      }
-      bubble.innerHTML = `
-        ${headerHtml}
-        <div>${escapeHtml(text)}</div>
-        <div style="font-size:9.5px; opacity:0.7; margin-top:4px; text-align:${type === 'user' ? 'right' : 'left'};">${time || ''}</div>
-      `;
-      body.appendChild(bubble);
-      body.scrollTop = body.scrollHeight;
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      refreshWorkspace();
-      initSSE();
-      updateQualityBadgeHint();
+  // API Fetch Wrapper
+  async function apiFetch(url, options = {}) {
+    const opts = Object.assign({}, options);
+    opts.headers = Object.assign({}, opts.headers, {
+      "X-Session-ID": CURRENT_SESSION
     });
-  </script>
+    return fetch(url, opts);
+  }
+
+  // Global State
+  let activeBinFolder = "raw";
+  let activeIngestType = "yt";
+  let activeVideo = "final_video.mp4";
+  let activeMonitorSource = "program";
+  let timelinePixelsPerSecond = 24.0;
+  let timelineTotalDuration = 30.0;
+  let sseSource = null;
+
+  // Toast Helper
+  function showToast(msg) {
+    const t = document.getElementById("toastPill");
+    t.innerText = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2600);
+  }
+
+  // --- 2. Workspace Layout Switcher ---
+  function switchWorkspaceLayout(mode) {
+    ["Assembly", "Color", "Audio", "Export"].forEach(m => {
+      const btn = document.getElementById(`wsBtn${m}`);
+      if (btn) btn.classList.remove("active");
+    });
+
+    if (mode === "assembly") {
+      document.getElementById("wsBtnAssembly").classList.add("active");
+      switchInspectorTab("motion");
+      switchBottomTab("timeline");
+      switchBinFolder("raw");
+    } else if (mode === "color") {
+      document.getElementById("wsBtnColor").classList.add("active");
+      switchInspectorTab("lumetri");
+    } else if (mode === "audio") {
+      document.getElementById("wsBtnAudio").classList.add("active");
+      switchInspectorTab("sound");
+      switchBinFolder("audio");
+    } else if (mode === "export") {
+      document.getElementById("wsBtnExport").classList.add("active");
+      switchInspectorTab("export");
+      switchBinFolder("export");
+    }
+  }
+
+  // --- 3. Media Bin Controller ---
+  function switchBinFolder(folderKey) {
+    activeBinFolder = folderKey;
+    ["raw", "ref", "audio", "export"].forEach(f => {
+      const tab = document.getElementById(`tabBin${capitalize(f)}`);
+      if (tab) {
+        if (f === folderKey) tab.classList.add("active");
+        else tab.classList.remove("active");
+      }
+    });
+
+    const dropText = document.getElementById("dropzoneText");
+    const fileInput = document.getElementById("mediaFileInput");
+    if (folderKey === "raw") {
+      dropText.innerText = "Drop raw video clips (.mp4, .mov, .mkv) here";
+      fileInput.accept = ".mp4,.mov,.mkv,video/*";
+    } else if (folderKey === "ref") {
+      dropText.innerText = "Drop style reference reel (ref_sample.mp4)";
+      fileInput.accept = ".mp4,.mov,video/*";
+    } else if (folderKey === "audio") {
+      dropText.innerText = "Drop voiceover (.mp3) or BGM (.mp3)";
+      fileInput.accept = ".mp3,.wav,.m4a,audio/*";
+    } else {
+      dropText.innerText = "Rendered video exports output folder";
+    }
+
+    renderCurrentFolderFiles();
+  }
+
+  function triggerActiveFolderUpload() {
+    if (activeBinFolder === "export") {
+      showToast("Export folder is read-only output.");
+      return;
+    }
+    document.getElementById("mediaFileInput").click();
+  }
+
+  async function handleFileUpload(files) {
+    if (!files || files.length === 0) return;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fd = new FormData();
+      fd.append("file", file);
+      showToast(`Importing ${file.name}...`);
+      let category = activeBinFolder;
+      if (category === "ref") category = "reference";
+      if (category === "audio") {
+        category = file.name.toLowerCase().includes("bgm") ? "bgm" : "voice";
+      }
+
+      try {
+        const res = await apiFetch(`/api/upload/${category}`, { method: "POST", body: fd });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Imported ${data.filename}`);
+        } else {
+          showToast(`Error: ${data.error}`);
+        }
+      } catch (err) {
+        showToast(`Upload failed: ${err.message}`);
+      }
+    }
+    syncProjectWorkspace();
+  }
+
+  let cachedFilesData = {};
+
+  async function loadMediaFiles() {
+    try {
+      const res = await apiFetch("/api/files");
+      cachedFilesData = await res.json();
+      updateBinBadges();
+      renderCurrentFolderFiles();
+    } catch (e) {
+      console.error("Failed to load files", e);
+    }
+  }
+
+  function updateBinBadges() {
+    const rawCount = (cachedFilesData.raw_video || []).length;
+    const refCount = (cachedFilesData.references || []).length;
+    const audioCount = (cachedFilesData.audio || []).length;
+    const exportCount = (cachedFilesData.export || []).length;
+
+    document.getElementById("badgeCountRaw").innerText = `(${rawCount})`;
+    document.getElementById("badgeCountRef").innerText = `(${refCount})`;
+    document.getElementById("badgeCountAudio").innerText = `(${audioCount})`;
+    document.getElementById("badgeCountExport").innerText = `(${exportCount})`;
+  }
+
+  function renderCurrentFolderFiles() {
+    const container = document.getElementById("mediaItemsContainer");
+    container.innerHTML = "";
+
+    let list = [];
+    let iconType = "video";
+    let folderKey = activeBinFolder;
+
+    if (activeBinFolder === "raw") {
+      list = cachedFilesData.raw_video || [];
+      iconType = "video";
+    } else if (activeBinFolder === "ref") {
+      list = cachedFilesData.references || [];
+      iconType = "ref";
+      folderKey = "references";
+    } else if (activeBinFolder === "audio") {
+      list = cachedFilesData.audio || [];
+      iconType = "audio";
+    } else if (activeBinFolder === "export") {
+      list = cachedFilesData.export || [];
+      iconType = "video";
+    }
+
+    if (list.length === 0) {
+      container.innerHTML = `<div style="padding:24px; text-align:center; color:var(--nle-text-dim); font-size:11px;">No files in ${activeBinFolder} bin.<br>Import files or paste links above.</div>`;
+      return;
+    }
+
+    list.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "media-item-card";
+      card.onclick = () => previewMediaItem(item.name, folderKey);
+      card.innerHTML = `
+        <div class="media-card-left" title="${item.name}">
+          <div class="media-type-icon ${iconType}">
+            ${iconType === 'video' ? 'MP4' : (iconType === 'audio' ? 'WAV' : 'REF')}
+          </div>
+          <span class="media-card-name">${item.name}</span>
+        </div>
+        <div class="media-card-right">
+          <span class="media-card-size">${item.size_mb} MB</span>
+          <button class="btn-media-del" title="Delete file" onclick="event.stopPropagation(); deleteMediaFile('${folderKey}', '${item.name}')">
+            ✕
+          </button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  async function deleteMediaFile(folderKey, filename) {
+    if (!confirm(`Delete ${filename} from project bin?`)) return;
+    try {
+      const res = await apiFetch(`/api/files/${folderKey}/${filename}`, { method: "DELETE" });
+      if (res.ok) {
+        showToast(`Deleted ${filename}`);
+        syncProjectWorkspace();
+      }
+    } catch (e) {
+      showToast(e.message);
+    }
+  }
+
+  function previewMediaItem(filename, folderKey) {
+    if (folderKey === "export" || filename.endsWith(".mp4")) {
+      activeVideo = filename;
+      loadProgramVideo(filename);
+      document.getElementById("monitorActiveTitle").innerText = `Program: ${filename}`;
+    } else {
+      showToast(`Selected ${filename}`);
+    }
+  }
+
+  // --- URL Ingestion Bar ---
+  function setIngestTarget(type) {
+    activeIngestType = type;
+    ["yt", "insta", "ref"].forEach(t => {
+      const btn = document.getElementById(`btnIngest${capitalize(t)}`);
+      if (btn) {
+        if (t === type) btn.classList.add("active");
+        else btn.classList.remove("active");
+      }
+    });
+
+    const input = document.getElementById("urlIngestInput");
+    if (type === "yt") input.placeholder = "Paste YouTube link -> Raw video/links.txt...";
+    else if (type === "insta") input.placeholder = "Paste Instagram audio link -> audio/insta_link.txt...";
+    else input.placeholder = "Paste Style Reel link -> References/style_link.txt...";
+    loadCurrentLinks();
+  }
+
+  async function loadCurrentLinks() {
+    try {
+      const res = await apiFetch("/api/links");
+      const data = await res.json();
+      const input = document.getElementById("urlIngestInput");
+      if (activeIngestType === "yt") input.value = data.yt_links || "";
+      else if (activeIngestType === "insta") input.value = data.insta_link || "";
+      else input.value = data.ref_link || "";
+    } catch (e) {}
+  }
+
+  async function saveActiveIngestLink() {
+    const val = document.getElementById("urlIngestInput").value.trim();
+    const payload = {};
+    if (activeIngestType === "yt") payload.yt_links = val;
+    else if (activeIngestType === "insta") payload.insta_link = val;
+    else payload.ref_link = val;
+
+    try {
+      const res = await apiFetch("/api/links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) showToast("Link saved to bin!");
+      syncProjectWorkspace();
+    } catch (e) {
+      showToast(e.message);
+    }
+  }
+
+  async function clearActiveIngestLink() {
+    document.getElementById("urlIngestInput").value = "";
+    try {
+      await apiFetch("/api/links/clear", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: activeIngestType })
+      });
+      showToast("Link cleared.");
+      syncProjectWorkspace();
+    } catch (e) {}
+  }
+
+  // --- 4. Program Monitor Cinema Video Player ---
+  const programVideo = document.getElementById("mainProgramVideo");
+
+  function switchMonitorSource(srcType) {
+    activeMonitorSource = srcType;
+    document.getElementById("btnSrcProgram").classList.toggle("active", srcType === "program");
+    document.getElementById("btnSrcReference").classList.toggle("active", srcType === "reference");
+
+    if (srcType === "reference") {
+      programVideo.src = `/api/reference/video?session_id=${CURRENT_SESSION}`;
+      document.getElementById("monitorActiveTitle").innerText = "Source: Reference Style Reel (ref_sample.mp4)";
+    } else {
+      loadProgramVideo(activeVideo);
+      document.getElementById("monitorActiveTitle").innerText = `Program: ${activeVideo}`;
+    }
+    programVideo.load();
+  }
+
+  function loadProgramVideo(filename) {
+    programVideo.src = `/api/video/${filename}?session_id=${CURRENT_SESSION}`;
+    const dlBtn = document.getElementById("btnDownloadExport");
+    dlBtn.href = `/api/download/${filename}?session_id=${CURRENT_SESSION}`;
+    dlBtn.download = filename;
+  }
+
+  function togglePlayPause() {
+    if (programVideo.paused) {
+      programVideo.play();
+      document.getElementById("playIconSvg").innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+      document.getElementById("btnPlayPause").classList.add("play-active");
+    } else {
+      programVideo.pause();
+      document.getElementById("playIconSvg").innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+      document.getElementById("btnPlayPause").classList.remove("play-active");
+    }
+  }
+
+  function stepFrame(frames) {
+    const fps = 30;
+    programVideo.currentTime = Math.max(0, programVideo.currentTime + (frames / fps));
+  }
+
+  function stepToStart() {
+    programVideo.currentTime = 0;
+    updateTimecode();
+  }
+
+  function toggleSafeZone() {
+    const sz = document.getElementById("safeZoneOverlay");
+    sz.classList.toggle("active");
+    document.getElementById("btnToggleSafeZone").classList.toggle("btn-primary", sz.classList.contains("active"));
+  }
+
+  function toggleFullscreen() {
+    const frame = document.getElementById("cinemaPlayerFrame");
+    if (!document.fullscreenElement) {
+      frame.requestFullscreen().catch(err => alert(err.message));
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  // Timecode updates (HH:MM:SS:FF)
+  function updateTimecode() {
+    const t = programVideo.currentTime || 0;
+    const fps = 30;
+    const hours = Math.floor(t / 3600);
+    const mins = Math.floor((t % 3600) / 60);
+    const secs = Math.floor(t % 60);
+    const frames = Math.floor((t - Math.floor(t)) * fps);
+
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById("timecodeDisplay").innerText = 
+      `${pad(hours)}:${pad(mins)}:${pad(secs)}:${pad(frames)}`;
+
+    // Sync Timeline playhead needle
+    updateTimelinePlayhead(t);
+  }
+  programVideo.addEventListener("timeupdate", updateTimecode);
+  programVideo.addEventListener("play", () => {
+    document.getElementById("playIconSvg").innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+    document.getElementById("btnPlayPause").classList.add("play-active");
+  });
+  programVideo.addEventListener("pause", () => {
+    document.getElementById("playIconSvg").innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+    document.getElementById("btnPlayPause").classList.remove("play-active");
+  });
+
+  // --- 5. Inspector Tabs & Metadata Sync ---
+  function switchInspectorTab(tabId) {
+    ["motion", "lumetri", "sound", "export"].forEach(t => {
+      const btn = document.getElementById(`tabInsp${capitalize(t)}`);
+      const content = document.getElementById(`inspTab${capitalize(t)}`);
+      if (btn && content) {
+        if (t === tabId) {
+          btn.classList.add("active");
+          content.style.display = "flex";
+        } else {
+          btn.classList.remove("active");
+          content.style.display = "none";
+        }
+      }
+    });
+  }
+
+  function updatePunchZoomLabel(val) {
+    document.getElementById("lblPunchZoom").innerText = parseFloat(val).toFixed(2) + "x";
+  }
+
+  function updateScriptWords() {
+    const s = document.getElementById("inspAiScript").value.trim();
+    const words = s ? s.split(/\s+/).length : 0;
+    const sec = Math.round(words / 2.6);
+    document.getElementById("lblScriptStats").innerText = `${words} words (~${sec}s speech)`;
+  }
+
+  async function loadInspectorMetadata() {
+    try {
+      const res = await apiFetch("/api/metadata");
+      const meta = await res.json();
+      document.getElementById("inspMetaTitle").value = meta.title || "";
+      document.getElementById("ytPublishTitle").value = meta.title || "";
+      document.getElementById("inspAiScript").value = meta.script || "";
+      document.getElementById("ytPublishTags").value = (meta.tags || []).join(", ");
+      document.getElementById("ytPublishPrivacy").value = meta.privacyStatus || "public";
+
+      if (meta.pacing) document.getElementById("selCutPacing").value = meta.pacing;
+      if (meta.color_preset) document.getElementById("selColorPreset").value = meta.color_preset;
+      if (meta.contrast && document.getElementById("rngLumetriContrast")) {
+        document.getElementById("rngLumetriContrast").value = meta.contrast;
+        document.getElementById("lblLumetriContrast").innerText = meta.contrast + "x";
+      }
+      if (meta.saturation && document.getElementById("rngLumetriSaturation")) {
+        document.getElementById("rngLumetriSaturation").value = meta.saturation;
+        document.getElementById("lblLumetriSaturation").innerText = meta.saturation + "x";
+      }
+      if (meta.ducking_db && document.getElementById("rngBgmDuckingDb")) {
+        document.getElementById("rngBgmDuckingDb").value = meta.ducking_db;
+        document.getElementById("lblBgmDucking").innerText = meta.ducking_db + " dB";
+      }
+      if (meta.voice_mode && document.getElementById("selVoiceMode")) {
+        document.getElementById("selVoiceMode").value = meta.voice_mode;
+      }
+      if (meta.punch_zoom) {
+        document.getElementById("rngPunchZoom").value = meta.punch_zoom;
+        updatePunchZoomLabel(meta.punch_zoom);
+      }
+      if (meta.quality) document.getElementById("selExportQuality").value = meta.quality;
+
+      updateScriptWords();
+    } catch (e) {}
+  }
+
+  async function saveInspectorMeta() {
+    const tagsRaw = document.getElementById("ytPublishTags").value;
+    const tags = tagsRaw.split(",").map(t => t.trim()).filter(Boolean);
+
+    const payload = {
+      title: document.getElementById("inspMetaTitle").value || document.getElementById("ytPublishTitle").value,
+      script: document.getElementById("inspAiScript").value,
+      tags: tags,
+      privacyStatus: document.getElementById("ytPublishPrivacy").value,
+      pacing: document.getElementById("selCutPacing").value,
+      color_preset: document.getElementById("selColorPreset").value,
+      contrast: document.getElementById("rngLumetriContrast") ? parseFloat(document.getElementById("rngLumetriContrast").value) : 1.05,
+      saturation: document.getElementById("rngLumetriSaturation") ? parseFloat(document.getElementById("rngLumetriSaturation").value) : 1.20,
+      ducking_db: document.getElementById("rngBgmDuckingDb") ? parseInt(document.getElementById("rngBgmDuckingDb").value) : -18,
+      voice_mode: document.getElementById("selVoiceMode") ? document.getElementById("selVoiceMode").value : "auto",
+      punch_zoom: parseFloat(document.getElementById("rngPunchZoom").value),
+      jump_cuts: document.getElementById("chkJumpCuts").checked,
+      whip_pan: document.getElementById("chkWhipPan").checked,
+      vignette: document.getElementById("chkVignette").checked,
+      noise_reduction: document.getElementById("chkNoiseRemoval").checked,
+      radio_eq: document.getElementById("chkRadioEq").checked,
+      bgm_ducking: document.getElementById("chkBgmDucking").checked,
+      whoosh_sfx: document.getElementById("chkWhoosh").checked,
+      quality: document.getElementById("selExportQuality").value
+    };
+
+    try {
+      await apiFetch("/api/metadata", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      showToast("Inspector parameters saved to metadata.json");
+    } catch (e) {}
+  }
+
+  // --- 6. Visual Multi-Track Timeline ---
+  let cachedTimelineTracks = null;
+
+  function renderRulerTicks(totalDuration, pxPerSec) {
+    const ruler = document.getElementById("timelineRulerBar");
+    if (!ruler) return;
+    ruler.innerHTML = "";
+    const stepSec = pxPerSec >= 30 ? 5 : (pxPerSec >= 18 ? 10 : 15);
+    const maxSec = Math.max(totalDuration, 60);
+    for (let s = 0; s <= maxSec; s += stepSec) {
+      const min = Math.floor(s / 60);
+      const rem = s % 60;
+      const label = `${String(min).padStart(2, '0')}:${String(rem).padStart(2, '0')}`;
+      const tick = document.createElement("span");
+      tick.className = "ruler-tick";
+      tick.style.left = `${s * pxPerSec}px`;
+      tick.innerText = label;
+      ruler.appendChild(tick);
+    }
+  }
+
+  function handleTimelineZoom(val) {
+    timelinePixelsPerSecond = parseFloat(val);
+    const mult = (timelinePixelsPerSecond / 24).toFixed(1);
+    const lbl = document.getElementById("lblTimelineZoom");
+    if (lbl) lbl.innerText = `${mult}x`;
+    renderRulerTicks(timelineTotalDuration, timelinePixelsPerSecond);
+    if (cachedTimelineTracks) {
+      renderTimelineTracks(cachedTimelineTracks);
+    }
+    if (programVideo) {
+      updateTimelinePlayhead(programVideo.currentTime);
+    }
+  }
+
+  function switchBottomTab(mode) {
+    const isTl = mode === "timeline";
+    document.getElementById("tabBtnTimeline").classList.toggle("active", isTl);
+    document.getElementById("tabBtnConsole").classList.toggle("active", !isTl);
+    document.getElementById("timelineViewportContainer").style.display = isTl ? "flex" : "none";
+    document.getElementById("renderConsoleView").classList.toggle("active", !isTl);
+  }
+
+  async function loadTimelineData() {
+    try {
+      const res = await apiFetch("/api/timeline");
+      const data = await res.json();
+      timelineTotalDuration = Math.max(data.total_duration || 30.0, 30.0);
+      cachedTimelineTracks = data.tracks;
+      renderRulerTicks(timelineTotalDuration, timelinePixelsPerSecond);
+      renderTimelineTracks(data.tracks);
+    } catch (e) {
+      console.error("Could not load timeline data", e);
+    }
+  }
+
+  function renderTimelineTracks(tracks) {
+    if (!tracks) return;
+    const pxPerSec = timelinePixelsPerSecond;
+
+    // V2: Captions & Hook
+    const laneV2 = document.getElementById("laneV2");
+    laneV2.innerHTML = "";
+    if (tracks.v2_captions) {
+      // Hook banner block
+      if (tracks.v2_captions.hook) {
+        const h = tracks.v2_captions.hook;
+        const blk = document.createElement("div");
+        blk.className = "timeline-clip-block";
+        blk.style.left = `${h.start * pxPerSec}px`;
+        blk.style.width = `${Math.max(60, (h.end - h.start) * pxPerSec)}px`;
+        blk.style.background = "#ea580c";
+        blk.innerText = `🔥 HOOK: ${h.text || 'BANNER'}`;
+        laneV2.appendChild(blk);
+      }
+      // Spoken captions
+      (tracks.v2_captions.items || []).forEach(c => {
+        const blk = document.createElement("div");
+        blk.className = "timeline-clip-block";
+        blk.style.left = `${c.start * pxPerSec}px`;
+        blk.style.width = `${Math.max(30, (c.end - c.start) * pxPerSec)}px`;
+        blk.style.background = "#d97706";
+        blk.innerText = c.text;
+        laneV2.appendChild(blk);
+      });
+    }
+
+    // V1: Video Clips
+    const laneV1 = document.getElementById("laneV1");
+    laneV1.innerHTML = "";
+    if (tracks.v1_video) {
+      (tracks.v1_video.items || []).forEach((v, idx) => {
+        const blk = document.createElement("div");
+        blk.className = "timeline-clip-block";
+        blk.style.left = `${v.start * pxPerSec}px`;
+        blk.style.width = `${Math.max(40, (v.end - v.start) * pxPerSec)}px`;
+        blk.style.background = idx % 2 === 0 ? "#0284c7" : "#0369a1";
+        blk.innerText = `📹 ${v.name}`;
+        laneV1.appendChild(blk);
+      });
+    }
+
+    // A1: Master Voice
+    const laneA1 = document.getElementById("laneA1");
+    laneA1.innerHTML = "";
+    if (tracks.a1_voice && tracks.a1_voice.items) {
+      tracks.a1_voice.items.forEach(a => {
+        const blk = document.createElement("div");
+        blk.className = "timeline-clip-block";
+        blk.style.left = `${a.start * pxPerSec}px`;
+        blk.style.width = `${a.duration * pxPerSec}px`;
+        blk.style.background = "#059669";
+        blk.innerText = `🎙️ ${a.name} [Voice Master]`;
+        laneA1.appendChild(blk);
+      });
+    }
+
+    // A2: Ducked BGM
+    const laneA2 = document.getElementById("laneA2");
+    laneA2.innerHTML = "";
+    if (tracks.a2_bgm && tracks.a2_bgm.items) {
+      tracks.a2_bgm.items.forEach(b => {
+        const blk = document.createElement("div");
+        blk.className = "timeline-clip-block";
+        blk.style.left = `${b.start * pxPerSec}px`;
+        blk.style.width = `${b.duration * pxPerSec}px`;
+        blk.style.background = "#7e22ce";
+        blk.innerText = `🎵 ${b.name} [Auto-Ducked -18dB]`;
+        laneA2.appendChild(blk);
+      });
+    }
+  }
+
+  function updateTimelinePlayhead(currentTime) {
+    const needle = document.getElementById("timelinePlayheadNeedle");
+    const pos = currentTime * timelinePixelsPerSecond;
+    needle.style.left = `${pos}px`;
+  }
+
+  function handleTimelineClick(event) {
+    const area = document.getElementById("timelineTracksScrollArea");
+    const rect = area.getBoundingClientRect();
+    const clickX = event.clientX - rect.left + area.scrollLeft;
+    const targetTime = Math.max(0, clickX / timelinePixelsPerSecond);
+    programVideo.currentTime = targetTime;
+    updateTimecode();
+  }
+
+  // --- 7. Engine Execution & Real-Time Console ---
+  async function runEngine(engineKey) {
+    saveInspectorMeta();
+    switchBottomTab("console");
+    showToast(`Starting ${engineKey}...`);
+
+    const quality = document.getElementById("selExportQuality").value || "auto";
+
+    try {
+      const res = await apiFetch(`/api/execute/${engineKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quality: quality })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(`Job Queued: ${data.engine}`);
+        document.getElementById("btnCancelRun").style.display = "inline-flex";
+      } else {
+        showToast(`Warning: ${data.error}`);
+      }
+    } catch (e) {
+      showToast(`Error: ${e.message}`);
+    }
+  }
+
+  function quickRenderActiveProject() {
+    runEngine("auto_pilot");
+  }
+
+  async function cancelRunningJob() {
+    if (!confirm("Cancel current render task?")) return;
+    try {
+      const res = await apiFetch("/api/stop", { method: "POST" });
+      const data = await res.json();
+      showToast(data.message);
+    } catch (e) {}
+  }
+
+  async function triggerYouTubePublish() {
+    if (!confirm(`Publish ${activeVideo} to your YouTube channel?`)) return;
+    switchBottomTab("console");
+
+    const tags = document.getElementById("ytPublishTags").value.split(",").map(t => t.trim()).filter(Boolean);
+    const payload = {
+      video: activeVideo,
+      title: document.getElementById("ytPublishTitle").value,
+      description: document.getElementById("inspAiScript").value,
+      tags: tags,
+      privacyStatus: document.getElementById("ytPublishPrivacy").value
+    };
+
+    try {
+      const res = await apiFetch("/api/execute/upload_youtube", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) showToast("Uploading to YouTube channel...");
+      else showToast("Upload error");
+    } catch (e) {}
+  }
+
+  // SSE Stream
+  function initSSE() {
+    if (sseSource) sseSource.close();
+    sseSource = new EventSource(`/api/stream-logs?session_id=${CURRENT_SESSION}`);
+
+    sseSource.onmessage = function(event) {
+      try {
+        const data = JSON.parse(event.data);
+        handleSSEEvent(data);
+      } catch (e) {}
+    };
+    sseSource.onerror = function() {
+      setTimeout(initSSE, 3000);
+    };
+  }
+
+  function handleSSEEvent(data) {
+    const liveDot = document.getElementById("headerLiveDot");
+    const consoleDot = document.getElementById("consoleLiveDot");
+    const queueNotice = document.getElementById("queueNoticeText");
+    const cancelBtn = document.getElementById("btnCancelRun");
+
+    if (data.type === "queued") {
+      liveDot.className = "live-dot busy";
+      consoleDot.style.display = "inline-block";
+      queueNotice.innerText = `Queued: #${data.position} (${data.engine})`;
+      cancelBtn.style.display = "inline-flex";
+      appendConsoleLog(data.message, "warning", data.timestamp);
+    } else if (data.type === "start") {
+      liveDot.className = "live-dot busy";
+      consoleDot.style.display = "inline-block";
+      queueNotice.innerText = `Active: ${data.engine}`;
+      cancelBtn.style.display = "inline-flex";
+      appendConsoleLog(data.message, "info", data.timestamp);
+    } else if (data.type === "log") {
+      let cls = "log";
+      const l = data.line.toLowerCase();
+      if (l.includes("error") || l.includes("fail")) cls = "error";
+      else if (l.includes("done") || l.includes("ready") || l.includes("ready at")) cls = "success";
+      else if (l.includes("downloading") || l.includes("[Quality:")) cls = "info";
+      appendConsoleLog(data.line, cls, data.timestamp);
+    } else if (data.type === "end") {
+      liveDot.className = "live-dot";
+      consoleDot.style.display = "none";
+      queueNotice.innerText = "Queue: Idle";
+      cancelBtn.style.display = "none";
+      appendConsoleLog(data.message, data.code === 0 ? "success" : "error", data.timestamp);
+      syncProjectWorkspace();
+    }
+  }
+
+  function appendConsoleLog(text, cls, time) {
+    const body = document.getElementById("consoleStreamBody");
+    const row = document.createElement("div");
+    row.className = `term-line ${cls}`;
+    row.innerHTML = `<span style="color:var(--nle-text-dim); margin-right:6px;">[${time || new Date().toLocaleTimeString()}]</span>${escapeHtml(text)}`;
+    body.appendChild(row);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function clearConsoleLogs() {
+    document.getElementById("consoleStreamBody").innerHTML = `<div class="term-line info">[STUDIO NLE] Logs cleared.</div>`;
+  }
+
+  // --- 8. Interactive Studio AI Chat & Video Bug Reporter ---
+  function toggleChat(forceOpen) {
+    const box = document.getElementById("studioChatWidget");
+    const isOpen = box.classList.contains("open");
+    const targetState = forceOpen !== undefined ? forceOpen : !isOpen;
+    if (targetState) {
+      box.classList.add("open");
+      document.getElementById("chatActiveVidLabel").innerText = `Active: ${activeVideo || 'None'}`;
+      loadChatHistory();
+      setTimeout(() => document.getElementById("chatInputText").focus(), 100);
+    } else {
+      box.classList.remove("open");
+    }
+  }
+
+  async function loadChatHistory() {
+    try {
+      const res = await apiFetch("/api/chat/messages");
+      const data = await res.json();
+      const list = data.messages || [];
+      if (list.length > 0) {
+        const body = document.getElementById("chatMessagesBody");
+        const welcome = body.firstElementChild.outerHTML;
+        body.innerHTML = welcome;
+        list.forEach(m => {
+          appendChatBubble(m.user_message, "user", m.timestamp, m.video);
+          if (m.assistant_reply) appendChatBubble(m.assistant_reply, "bot", m.timestamp);
+        });
+        body.scrollTop = body.scrollHeight;
+      }
+    } catch (e) {}
+  }
+
+  async function submitChatMessage(customText) {
+    const inp = document.getElementById("chatInputText");
+    const text = customText || inp.value.trim();
+    if (!text) return;
+    if (!customText) inp.value = "";
+
+    const now = new Date().toLocaleTimeString();
+    appendChatBubble(text, "user", now, activeVideo);
+
+    try {
+      const res = await apiFetch("/api/chat/message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, video: activeVideo, category: "issue_report" })
+      });
+      const data = await res.json();
+      if (res.ok && data.entry) {
+        appendChatBubble(data.entry.assistant_reply, "bot", new Date().toLocaleTimeString());
+      }
+    } catch (e) {
+      appendChatBubble("Could not send message.", "bot", now);
+    }
+  }
+
+  function sendQuickChip(txt) {
+    submitChatMessage(txt);
+  }
+
+  function appendChatBubble(text, type, time, vid) {
+    const body = document.getElementById("chatMessagesBody");
+    const bubble = document.createElement("div");
+    bubble.className = `chat-bubble ${type}`;
+    let badge = "";
+    if (type === "user" && vid) {
+      badge = `<span style="font-size:8.5px; background:rgba(255,255,255,0.2); padding:1px 4px; border-radius:3px; margin-left:4px;">📹 ${escapeHtml(vid)}</span>`;
+    }
+    bubble.innerHTML = `
+      <div style="font-size:9.5px; opacity:0.8; margin-bottom:2px; display:flex; justify-content:${type==='user'?'flex-end':'flex-start'}">
+        ${type === 'user' ? 'You ' + badge : '🤖 Studio Assistant'}
+      </div>
+      <div>${escapeHtml(text)}</div>
+      <div style="font-size:8.5px; opacity:0.6; margin-top:3px; text-align:${type==='user'?'right':'left'};">${time || ''}</div>
+    `;
+    body.appendChild(bubble);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  // --- 9. Keyboard Shortcuts & Sync ---
+  window.addEventListener("keydown", (e) => {
+    // Space bar toggles Play/Pause if not inside text input/textarea
+    if (e.code === "Space" && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
+      e.preventDefault();
+      togglePlayPause();
+    }
+    // Arrow keys for -1s / +1s seek
+    if (e.code === "ArrowLeft" && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
+      e.preventDefault();
+      stepFrame(-30);
+    }
+    if (e.code === "ArrowRight" && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
+      e.preventDefault();
+      stepFrame(30);
+    }
+  });
+
+  async function syncProjectWorkspace() {
+    loadMediaFiles();
+    loadCurrentLinks();
+    loadInspectorMetadata();
+    loadTimelineData();
+  }
+
+  function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function escapeHtml(str) { return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  // Startup Init
+  window.addEventListener("DOMContentLoaded", () => {
+    syncProjectWorkspace();
+    initSSE();
+    loadProgramVideo(activeVideo);
+  });
+</script>
 </body>
 </html>
