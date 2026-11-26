@@ -1,9 +1,19 @@
-import os, glob, subprocess
+import os, glob, subprocess, shutil
 import numpy as np
 import PIL.Image
 if not hasattr(PIL.Image, "ANTIALIAS"):
     PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
-from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips
+
+try:
+    from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips
+except (ImportError, ModuleNotFoundError):
+    try:
+        from moviepy import VideoFileClip, AudioFileClip, concatenate_videoclips
+    except Exception:
+        from moviepy.video.io.VideoFileClip import VideoFileClip
+        from moviepy.audio.io.AudioFileClip import AudioFileClip
+        from moviepy.video.compositing.concatenate import concatenate_videoclips
+
 from build_video import crop_and_pro_fx, get_export_resolution_and_bitrate
 
 import sys
@@ -105,6 +115,11 @@ def build_insta_reel():
     final_reel = concatenate_videoclips(v_clips, method="compose").set_audio(bgm)
     out_path = os.path.join(EXPORT_DIR, "insta_reel.mp4")
     final_reel.write_videofile(out_path, fps=30, codec="libx264", audio_codec="aac", bitrate=bitrate, preset="fast", threads=4)
+    final_copy = os.path.join(EXPORT_DIR, "final_video.mp4")
+    try:
+        shutil.copy2(out_path, final_copy)
+    except Exception:
+        pass
     print(f"DONE! Reference-Styled Reel Ready at {target_w}x{target_h}: {out_path}")
 
 if __name__ == "__main__":

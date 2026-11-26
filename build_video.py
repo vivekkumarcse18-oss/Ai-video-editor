@@ -5,8 +5,20 @@ import PIL.Image
 if not hasattr(PIL.Image, "ANTIALIAS"):
     PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
 from PIL import Image, ImageDraw, ImageFont
-from moviepy.editor import VideoFileClip, AudioFileClip, ImageClip, CompositeVideoClip, CompositeAudioClip, concatenate_videoclips
-from moviepy.audio.AudioClip import AudioArrayClip
+try:
+    from moviepy.editor import VideoFileClip, AudioFileClip, ImageClip, CompositeVideoClip, CompositeAudioClip, concatenate_videoclips
+    from moviepy.audio.AudioClip import AudioArrayClip
+except (ImportError, ModuleNotFoundError):
+    try:
+        from moviepy import VideoFileClip, AudioFileClip, ImageClip, CompositeVideoClip, CompositeAudioClip, concatenate_videoclips
+        from moviepy.audio.AudioClip import AudioArrayClip
+    except Exception:
+        from moviepy.video.io.VideoFileClip import VideoFileClip
+        from moviepy.audio.io.AudioFileClip import AudioFileClip
+        from moviepy.video.VideoClip import ImageClip
+        from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
+        from moviepy.audio.AudioClip import CompositeAudioClip, AudioArrayClip
+        from moviepy.video.compositing.concatenate import concatenate_videoclips
 
 import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))

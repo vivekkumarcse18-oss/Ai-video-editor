@@ -680,6 +680,80 @@
       100% { left: 100%; }
     }
 
+    /* Status Card Boxes (Loading, Complete, Error) */
+    .status-card-box {
+      background: rgba(17, 24, 39, 0.95);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 22px 18px;
+      text-align: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .loading-spinner-ring {
+      width: 40px;
+      height: 40px;
+      border: 3.5px solid rgba(99, 102, 241, 0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.85s linear infinite;
+      margin: 0 auto 12px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .complete-icon-badge {
+      width: 46px;
+      height: 46px;
+      background: rgba(16, 185, 129, 0.2);
+      border: 2px solid var(--success);
+      color: var(--success);
+      border-radius: 50%;
+      font-size: 24px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px auto;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .error-icon-badge {
+      width: 46px;
+      height: 46px;
+      background: rgba(239, 68, 68, 0.2);
+      border: 2px solid var(--danger);
+      color: var(--danger);
+      border-radius: 50%;
+      font-size: 22px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px auto;
+    }
+
+    .status-card-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .status-card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
     /* Terminal Logs Accordion */
     .logs-accordion {
       margin-top: 14px;
@@ -1295,37 +1369,64 @@
         </div>
       </section>
 
-      <!-- STEP 3: GENERATE ACTION & LIVE PROGRESS -->
+      <!-- STEP 3: GENERATE ACTION & CLEAN STATUS -->
       <section class="generate-action-card">
+        <!-- 1. Idle State: Big Action Button -->
         <button class="btn-generate" id="btnMainGenerate" onclick="startVideoAutomation()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           <span id="btnMainGenerateText">⚡ GENERATE VIDEO NOW</span>
         </button>
 
-        <!-- Progress Box -->
-        <div class="progress-box" id="progressBox">
-          <div class="progress-info-row">
-            <span class="progress-title">
-              <span class="live-dot"></span>
-              <span id="txtProgressStepName">Processing video...</span>
-            </span>
-            <button class="btn btn-sm btn-danger" onclick="stopActiveJob()" id="btnStopJob">⏹ Stop</button>
+        <!-- 2. Loading State: Clean Animated Spinner & Friendly Progress -->
+        <div class="status-card-box loading-state" id="boxStateLoading" style="display:none;">
+          <div class="loading-spinner-ring"></div>
+          <div class="status-card-title">🎬 Video Editing in Progress...</div>
+          <div class="status-card-desc" id="txtLoadingDesc">
+            AI aapke clips aur music ko process kar raha hai. Kripya thoda intezar karein (usually 30–50 seconds lagte hain)...
           </div>
-          <div class="progress-bar-bg">
+          <div class="progress-bar-bg" style="margin: 14px 0 10px 0;">
             <div class="progress-bar-fill indeterminate" id="progressBarFill"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span id="txtCurrentActionText" style="font-size:11.5px; color:#38bdf8; font-weight:600;">✨ Starting video engine...</span>
+            <button class="btn btn-sm btn-danger" onclick="stopActiveJob()">⏹ Cancel</button>
           </div>
         </div>
 
-        <!-- Terminal Logs Drawer -->
-        <div class="logs-accordion">
-          <button class="logs-header-btn" onclick="toggleLogsView()">
-            <span style="display:flex; align-items:center; gap:6px;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-              <span>Live Engine Console Logs</span>
-            </span>
-            <span id="txtLogsToggle">Show Logs ▼</span>
+        <!-- 3. Complete State: Celebratory Success Card -->
+        <div class="status-card-box complete-state" id="boxStateComplete" style="display:none;">
+          <div class="complete-icon-badge">✓</div>
+          <div class="status-card-title" style="color:#6ee7b7;">🎉 Video Editing Complete!</div>
+          <div class="status-card-desc">
+            Aapka video successfully ban kar ready ho gaya hai. Aap ise seedhe download kar sakte hain ya player me dekh sakte hain!
+          </div>
+          <div style="display:flex; gap:10px; margin-top:14px; width:100%;">
+            <a class="btn btn-success" id="btnCompleteDownload" href="#" download style="flex:1; padding:11px; font-weight:700;">
+              ⬇️ Download MP4
+            </a>
+            <button class="btn btn-primary" onclick="resetToGenerateNew()" style="flex:1; padding:11px;">
+              ⚡ Create Another Video
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Error State: Helpful Retry Card -->
+        <div class="status-card-box error-state" id="boxStateError" style="display:none;">
+          <div class="error-icon-badge">⚠️</div>
+          <div class="status-card-title" style="color:#f87171;">Could Not Complete Video</div>
+          <div class="status-card-desc" id="txtErrorMessage">
+            Video edit nahi ho paya. Kripya check karein ki clips aur audio link sahi hai ya nahi.
+          </div>
+          <button class="btn btn-primary" onclick="resetToGenerateNew()" style="margin-top:12px; width:100%;">
+            🔄 Try Again
           </button>
-          <div class="logs-body" id="liveLogsContainer">Waiting for generation to start...</div>
+        </div>
+
+        <!-- Hidden Debug Log Container (Kept for internal SSE buffer, hidden from UI) -->
+        <div style="display:none;">
+          <div id="liveLogsContainer"></div>
+          <div id="progressBox"></div>
+          <div id="txtProgressStepName"></div>
         </div>
       </section>
 
@@ -1812,6 +1913,15 @@
       }
     }
 
+    function resetToGenerateNew() {
+      document.getElementById("boxStateComplete").style.display = "none";
+      document.getElementById("boxStateError").style.display = "none";
+      document.getElementById("boxStateLoading").style.display = "none";
+      const btn = document.getElementById("btnMainGenerate");
+      btn.style.display = "flex";
+      btn.disabled = false;
+    }
+
     // --- 5. Start Execution & Real-Time SSE Stream ---
     async function startVideoAutomation() {
       if (IS_JOB_RUNNING) {
@@ -1821,15 +1931,15 @@
 
       await saveMetadataChanges();
 
-      const btn = document.getElementById("btnMainGenerate");
-      const progBox = document.getElementById("progressBox");
-      const logs = document.getElementById("liveLogsContainer");
+      // Show Clean Loading State
+      document.getElementById("btnMainGenerate").style.display = "none";
+      document.getElementById("boxStateLoading").style.display = "block";
+      document.getElementById("boxStateComplete").style.display = "none";
+      document.getElementById("boxStateError").style.display = "none";
+      document.getElementById("txtCurrentActionText").innerText = "✨ Starting video engine...";
 
-      btn.disabled = true;
-      progBox.classList.add("active");
-      logs.classList.add("open");
-      document.getElementById("txtLogsToggle").innerText = "Hide Logs ▲";
-      logs.innerText = `[VIDEO AUTOMATION] Starting ${ACTIVE_ENGINE} pipeline on Railway...\n`;
+      const logs = document.getElementById("liveLogsContainer");
+      if (logs) logs.innerText = `[VIDEO AUTOMATION] Starting ${ACTIVE_ENGINE} pipeline on Railway...\n`;
 
       const quality = document.getElementById("selExportQuality").value;
 
@@ -1843,17 +1953,19 @@
 
         if (res.ok) {
           IS_JOB_RUNNING = true;
-          showToast(`Automation started: ${ACTIVE_ENGINE}`);
+          showToast(`Video editing started...`);
           connectLogStream();
         } else {
           showToast(`Error: ${data.error}`);
-          btn.disabled = false;
-          progBox.classList.remove("active");
+          document.getElementById("boxStateLoading").style.display = "none";
+          document.getElementById("boxStateError").style.display = "block";
+          document.getElementById("txtErrorMessage").innerText = data.error || "Generation could not start.";
         }
       } catch (e) {
         showToast(`Request failed: ${e.message}`);
-        btn.disabled = false;
-        progBox.classList.remove("active");
+        document.getElementById("boxStateLoading").style.display = "none";
+        document.getElementById("boxStateError").style.display = "block";
+        document.getElementById("txtErrorMessage").innerText = e.message;
       }
     }
 
@@ -1865,22 +1977,23 @@
       const streamUrl = `/api/stream-logs?session_id=${CURRENT_SESSION}`;
       SSE_EVENT_SOURCE = new EventSource(streamUrl);
 
-      const logs = document.getElementById("liveLogsContainer");
-      const progText = document.getElementById("txtProgressStepName");
-
       SSE_EVENT_SOURCE.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           if (data.type === "log" && data.line) {
-            logs.innerText += data.line + "\n";
-            logs.scrollTop = logs.scrollHeight;
+            const logs = document.getElementById("liveLogsContainer");
+            if (logs) logs.innerText += data.line + "\n";
 
             const l = data.line.toLowerCase();
-            if (l.includes("download")) progText.innerText = "Downloading clips...";
-            else if (l.includes("whisper") || l.includes("transcrib")) progText.innerText = "Transcribing subtitles with Whisper...";
-            else if (l.includes("voice") || l.includes("tts")) progText.innerText = "Synthesizing AI Hindi speech...";
-            else if (l.includes("silence") || l.includes("jump")) progText.innerText = "Cutting pauses and silence gaps...";
-            else if (l.includes("ffmpeg") || l.includes("render") || l.includes("compos")) progText.innerText = "Rendering final 9:16 vertical video...";
+            const actionText = document.getElementById("txtCurrentActionText");
+            if (actionText) {
+              if (l.includes("download") || l.includes("extract")) actionText.innerText = "📥 Downloading media & audio...";
+              else if (l.includes("whisper") || l.includes("transcrib")) actionText.innerText = "✍️ Transcribing subtitles with Whisper...";
+              else if (l.includes("voice") || l.includes("tts")) actionText.innerText = "🎙️ Synthesizing AI Hindi speech...";
+              else if (l.includes("silence") || l.includes("jump")) actionText.innerText = "✂️ Cutting pauses & silence gaps...";
+              else if (l.includes("pacing") || l.includes("auto-editing")) actionText.innerText = "⚡ Slicing video clips to music rhythm...";
+              else if (l.includes("ffmpeg") || l.includes("render") || l.includes("encoding")) actionText.innerText = "🎬 Rendering final 9:16 vertical video...";
+            }
           } else if (data.type === "complete") {
             handleJobFinished(data.success, data.engine);
           } else if (data.type === "status") {
@@ -1898,8 +2011,7 @@
 
     function handleJobFinished(success, engine) {
       IS_JOB_RUNNING = false;
-      document.getElementById("btnMainGenerate").disabled = false;
-      document.getElementById("progressBox").classList.remove("active");
+      document.getElementById("boxStateLoading").style.display = "none";
 
       if (SSE_EVENT_SOURCE) {
         SSE_EVENT_SOURCE.close();
@@ -1907,12 +2019,19 @@
       }
 
       if (success) {
-        showToast("🎉 Video rendered successfully!");
+        document.getElementById("boxStateComplete").style.display = "block";
+        document.getElementById("boxStateError").style.display = "none";
+        const dlBtn = document.getElementById("btnCompleteDownload");
+        if (dlBtn) dlBtn.href = `/api/download/final_video.mp4?session_id=${CURRENT_SESSION}`;
+
+        showToast("🎉 Video ready!");
         loadVideoPlayer("final_video.mp4");
         loadExportHistory();
         syncAllWorkspaceData();
       } else {
-        showToast("Generation finished with errors. Check logs.");
+        document.getElementById("boxStateError").style.display = "block";
+        document.getElementById("boxStateComplete").style.display = "none";
+        showToast("Generation error. Please check video clips.");
       }
     }
 

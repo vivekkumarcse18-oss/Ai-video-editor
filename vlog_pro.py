@@ -168,6 +168,7 @@ def run_vlog_pro():
     if os.path.exists(out_file):
         try:
             shutil.copy2(out_file, alt_file)
+            shutil.copy2(out_file, os.path.join(EXPORT_DIR, "final_video.mp4"))
         except Exception:
             pass
         print(f"DONE! Pro Self-Vlog Editor exported to: {out_file}")
